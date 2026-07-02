@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cubic Lesson 01 Visual Versions</title>
+  <style>
+    :root {
+      --ink: #14212b;
+      --muted: #5a6875;
+      --paper: #fffaf1;
+      --line: #d8d1c3;
+      --blue: #176b87;
+      --cyan: #32a6a8;
+      --green: #2f8f5b;
+      --orange: #d97706;
+      --red: #c2413b;
+      --purple: #6d5bd0;
+      --gold: #b8892e;
+      --shadow: 0 18px 50px rgba(20, 33, 43, 0.13);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f3efe6;
+      line-height: 1.72;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 18px 64px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .brand {
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    .switch-note {
+      max-width: 760px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      padding: 14px 18px;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(20, 33, 43, 0.07);
+    }
+
+    .version {
+      margin: 34px 0 70px;
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .version-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 750;
+      border-radius: 999px;
+      background: #efe7d4;
+      color: #5d4630;
+      width: fit-content;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      font-size: clamp(34px, 6vw, 72px);
+      line-height: 1.02;
+      letter-spacing: 0;
+      margin-bottom: 18px;
+    }
+    h2 {
+      font-size: clamp(24px, 3.2vw, 38px);
+      line-height: 1.18;
+      margin-bottom: 18px;
+      letter-spacing: 0;
+    }
+    h3 {
+      font-size: 20px;
+      line-height: 1.28;
+      margin-bottom: 10px;
+    }
+
+    .formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(18px, 2.6vw, 28px);
+      line-height: 1.45;
+      font-weight: 800;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .small-formula {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-weight: 750;
+      color: var(--blue);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+      gap: 28px;
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .caption {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      margin-top: 8px;
+    }
+
+    .hero-img {
+      width: 100%;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid rgba(20, 33, 43, 0.18);
+    }
+
+    .svg-wrap {
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    svg { width: 100%; height: auto; display: block; }
+
+    .proof {
+      border-left: 5px solid var(--blue);
+      background: #f8fbfc;
+      padding: 20px 22px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .proof ol { padding-left: 24px; margin-bottom: 0; }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 0;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 750;
+      font-size: 14px;
+      background: #edf7f7;
+      color: #14595c;
+    }
+
+    .version-a .hero {
+      background: linear-gradient(90deg, #fffaf1 0%, #f5fbfc 100%);
+      padding: 42px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .version-a .content { padding: 38px 42px 46px; }
+
+    .definition { border-top: 5px solid var(--cyan); }
+    .theorem { border-top: 5px solid var(--red); background: #fff8f7; }
+    .intuition { border-top: 5px solid var(--gold); background: #fffaf0; }
+
+    .count-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      display: table;
+    }
+    .count-table th, .count-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #ebe4d8;
+      vertical-align: top;
+    }
+    .count-table th {
+      background: #efe7d4;
+      text-align: left;
+    }
+    .count-table tr:last-child td { border-bottom: none; }
+
+    .version-b {
+      background: #f7fbff;
+      border-color: #c9ddeb;
+    }
+    .version-b .hero {
+      padding: 42px;
+      background: #0f2631;
+      color: #f8fbfc;
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.05fr);
+      gap: 34px;
+      align-items: center;
+    }
+    .version-b .version-label {
+      background: rgba(50, 166, 168, 0.18);
+      color: #bdf6f3;
+    }
+    .version-b .content { padding: 38px 42px 46px; }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .metric {
+      background: #ffffff;
+      border: 1px solid #cfe2ee;
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 160px;
+    }
+    .metric strong {
+      display: block;
+      color: var(--blue);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+      margin: 20px 0;
+    }
+    .pipe-step {
+      background: #fff;
+      border: 1px solid #cfe2ee;
+      border-radius: 8px;
+      padding: 16px;
+      position: relative;
+    }
+    .pipe-step b { color: var(--purple); }
+
+    .version-c {
+      background: #fffaf1;
+      border-color: #d3bd8b;
+    }
+    .version-c .hero {
+      min-height: 560px;
+      padding: 46px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(9, 18, 26, 0.92), rgba(9, 18, 26, 0.28)),
+        url("../pics/微信图片_2026-06-22_001853_127.png") center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .version-c .hero h1 { max-width: 800px; }
+    .version-c .content { padding: 38px 42px 46px; }
+    .lesson-map {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+    .map-index {
+      position: sticky;
+      top: 12px;
+      border: 1px solid #d3bd8b;
+      background: #fff5dc;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .premium-box {
+      background: #12222d;
+      color: #fff;
+      border-radius: 8px;
+      padding: 22px;
+    }
+    .premium-box .formula { color: #ffe4a6; }
+
+    @media (max-width: 820px) {
+      .grid-2,
+      .version-b .hero,
+      .lesson-map {
+        grid-template-columns: 1fr;
+      }
+      .grid-3,
+      .dashboard,
+      .pipeline {
+        grid-template-columns: 1fr;
+      }
+      .version-a .hero,
+      .version-a .content,
+      .version-b .hero,
+      .version-b .content,
+      .version-c .hero,
+      .version-c .content {
+        padding: 26px 20px;
+      }
+      .map-index { position: static; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      .topbar, .switch-note { display: none; }
+      .version { box-shadow: none; border: none; page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <div class="brand">Cubic / Lesson 01 Visual Prototypes</div>
+      <div>Updated 2026-06-29</div>
+    </div>
+
+    <div class="switch-note">
+      下面是同一节课的三种视觉方向。它们不是三份不同数学内容，而是三种阅读体验：严谨教材、可视化网页、可售卖课程讲义。
+    </div>
+
+    <article class="version version-a">
+      <section class="hero">
+        <div class="version-label">Version A / 彩色本科教材版</div>
+        <div class="grid-2" style="margin-top: 22px;">
+          <div>
+            <h1>三阶魔方到底有多少种状态？</h1>
+            <p>这版适合作为正式 PDF 的数学主体。证明结构清楚，颜色只用来区分定义、直觉、定理和证明。</p>
+            <div class="formula">8! · 3<sup>7</sup> · 12! · 2<sup>11</sup> / 2</div>
+            <p class="caption">= 43,252,003,274,489,856,000</p>
+          </div>
+          <div class="svg-wrap" aria-label="Corner and edge cubies diagram">
+            <svg viewBox="0 0 520 360" role="img">
+              <rect width="520" height="360" fill="#fffaf1"/>
+              <g transform="translate(78 34)">
+                <rect x="0" y="0" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <rect x="100" y="0" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <rect x="200" y="0" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <rect x="0" y="100" width="90" height="90" rx="8" fill="#fff4dd" stroke="#d97706" stroke-width="3"/>
+                <rect x="100" y="100" width="90" height="90" rx="8" fill="#f4f7f9" stroke="#8da1ae" stroke-width="3"/>
+                <rect x="200" y="100" width="90" height="90" rx="8" fill="#fff4dd" stroke="#d97706" stroke-width="3"/>
+                <rect x="0" y="200" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <rect x="100" y="200" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <rect x="200" y="200" width="90" height="90" rx="8" fill="#e2f3f4" stroke="#176b87" stroke-width="3"/>
+                <text x="145" y="147" text-anchor="middle" font-size="18" fill="#5a6875">中心固定</text>
+              </g>
+              <g font-size="17" fill="#14212b" font-weight="700">
+                <text x="390" y="120">角块：8 个</text>
+                <text x="390" y="156">排列：8!</text>
+                <text x="390" y="210">棱块：12 个</text>
+                <text x="390" y="246">排列：12!</text>
+              </g>
+              <circle cx="370" cy="113" r="8" fill="#176b87"/>
+              <circle cx="370" cy="203" r="8" fill="#d97706"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="grid-3">
+          <div class="card definition">
+            <h3>定义</h3>
+            <p>一个状态写成 <span class="small-formula">(σ, τ, x, y)</span>。其中 <span class="small-formula">σ ∈ S₈</span> 记录角块排列，<span class="small-formula">τ ∈ S₁₂</span> 记录棱块排列。</p>
+          </div>
+          <div class="card intuition">
+            <h3>直觉</h3>
+            <p>先数所有“拆开重装看起来可能”的状态，再用三条守恒律删掉非法状态。</p>
+          </div>
+          <div class="card theorem">
+            <h3>核心定理</h3>
+            <p>合法当且仅当 <span class="small-formula">sgn(σ)=sgn(τ)</span>，<span class="small-formula">Σxᵢ=0 mod 3</span>，<span class="small-formula">Σyⱼ=0 mod 2</span>。</p>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 34px;">计数路径</h2>
+        <table class="count-table">
+          <thead>
+            <tr><th>对象</th><th>天真计数</th><th>隐藏约束</th><th>合法计数</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>角块位置</td><td class="small-formula">8!</td><td>任意排列可先考虑</td><td class="small-formula">8!</td></tr>
+            <tr><td>角块朝向</td><td class="small-formula">3⁸</td><td>总扭转量为 0 mod 3</td><td class="small-formula">3⁷</td></tr>
+            <tr><td>棱块位置</td><td class="small-formula">12!</td><td>与角块排列奇偶性一致</td><td class="small-formula">12! / 2</td></tr>
+            <tr><td>棱块朝向</td><td class="small-formula">2¹²</td><td>总翻转量为 0 mod 2</td><td class="small-formula">2¹¹</td></tr>
+          </tbody>
+        </table>
+
+        <h2 style="margin-top: 34px;">证明骨架</h2>
+        <div class="proof">
+          <ol>
+            <li>每个基本面转都让 4 个角块成一个 4-cycle，也让 4 个棱块成一个 4-cycle；二者同为奇排列，所以角块和棱块排列奇偶性始终一致。</li>
+            <li>每个基本面转保持角块总扭转量 <span class="small-formula">Σxᵢ mod 3</span> 不变。</li>
+            <li>每个基本面转保持棱块总翻转量 <span class="small-formula">Σyⱼ mod 2</span> 不变。</li>
+            <li>反过来，满足三条约束的配置可以通过四步构造解回去：复位角块位置、修正角块朝向、复位棱块位置、修正棱块朝向。</li>
+          </ol>
+        </div>
+      </section>
+    </article>
+
+    <article class="version version-b">
+      <section class="hero">
+        <div>
+          <div class="version-label">Version B / 可视化探索版</div>
+          <h1 style="margin-top: 22px;">先看到结构，再进入证明</h1>
+          <p>这版适合网页、手机阅读和视频配套讲义。它把三条约束做成“仪表盘”，让读者先看到为什么天真计数会多 12 倍。</p>
+          <div class="pill-row">
+            <span class="pill">角块总扭转</span>
+            <span class="pill">棱块总翻转</span>
+            <span class="pill">排列奇偶性</span>
+          </div>
+        </div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 620 420" role="img">
+            <rect width="620" height="420" fill="#102734"/>
+            <g transform="translate(65 45)">
+              <rect x="0" y="0" width="120" height="120" rx="12" fill="#32a6a8"/>
+              <rect x="130" y="0" width="120" height="120" rx="12" fill="#f59e0b"/>
+              <rect x="260" y="0" width="120" height="120" rx="12" fill="#6d5bd0"/>
+              <text x="60" y="54" text-anchor="middle" font-size="24" fill="#fff" font-weight="800">Σxᵢ</text>
+              <text x="60" y="86" text-anchor="middle" font-size="19" fill="#e9ffff">= 0 mod 3</text>
+              <text x="190" y="54" text-anchor="middle" font-size="24" fill="#fff" font-weight="800">Σyⱼ</text>
+              <text x="190" y="86" text-anchor="middle" font-size="19" fill="#fff7ed">= 0 mod 2</text>
+              <text x="320" y="54" text-anchor="middle" font-size="22" fill="#fff" font-weight="800">sgn σ</text>
+              <text x="320" y="86" text-anchor="middle" font-size="19" fill="#f3eeff">= sgn τ</text>
+            </g>
+            <g transform="translate(80 220)" fill="none" stroke="#d7f7f6" stroke-width="4" marker-end="url(#arrow)">
+              <path d="M0 0 C90 -60 160 -60 250 0"/>
+              <path d="M250 0 C340 60 410 60 500 0"/>
+            </g>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#d7f7f6"/>
+              </marker>
+            </defs>
+            <text x="310" y="340" text-anchor="middle" fill="#fff" font-size="28" font-weight="800">合法状态 = 天真状态 ÷ 12</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="content">
+        <h2>三条隐藏规则</h2>
+        <div class="dashboard">
+          <div class="metric">
+            <strong>1. 角块不能单独扭</strong>
+            <p>角块朝向取值在 <span class="small-formula">Z/3Z</span>。合法转动保持 <span class="small-formula">Σxᵢ</span> 模 3 不变。</p>
+          </div>
+          <div class="metric">
+            <strong>2. 棱块不能单独翻</strong>
+            <p>棱块朝向取值在 <span class="small-formula">Z/2Z</span>。合法转动保持 <span class="small-formula">Σyⱼ</span> 模 2 不变。</p>
+          </div>
+          <div class="metric">
+            <strong>3. 奇偶性必须同步</strong>
+            <p>一次面转同时给角块和棱块各一个 4-cycle，所以二者排列符号总是同步变化。</p>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 34px;">从天真计数到合法计数</h2>
+        <div class="pipeline">
+          <div class="pipe-step"><b>Step 0</b><br><span class="small-formula">8!·3⁸·12!·2¹²</span><br>所有拆装想象态</div>
+          <div class="pipe-step"><b>÷ 3</b><br>最后一个角块朝向被迫确定</div>
+          <div class="pipe-step"><b>÷ 2</b><br>最后一条棱朝向被迫确定</div>
+          <div class="pipe-step"><b>÷ 2</b><br>角块/棱块排列奇偶性必须一致</div>
+        </div>
+
+        <div class="svg-wrap">
+          <svg viewBox="0 0 780 220" role="img">
+            <rect width="780" height="220" fill="#ffffff"/>
+            <g font-family="monospace" font-size="24" font-weight="800" fill="#14212b">
+              <text x="28" y="65">8!·3⁸·12!·2¹²</text>
+              <text x="288" y="65">÷ 12</text>
+              <text x="420" y="65">= 8!·3⁷·12!·2¹¹ / 2</text>
+              <text x="108" y="158" fill="#176b87">43,252,003,274,489,856,000</text>
+            </g>
+            <path d="M240 58 L270 58" stroke="#c2413b" stroke-width="4"/>
+            <path d="M385 58 L410 58" stroke="#c2413b" stroke-width="4"/>
+          </svg>
+        </div>
+      </section>
+    </article>
+
+    <article class="version version-c">
+      <section class="hero">
+        <div class="version-label" style="background: rgba(255,255,255,0.18); color: #fff;">Version C / 可售卖课程讲义版</div>
+        <h1 style="margin-top: 22px;">Cube & Cosmos: 三阶魔方的状态数</h1>
+        <p style="max-width: 720px; font-size: 20px;">把一个玩具变成一套严谨的群论语言：排列、朝向、奇偶性与不变量。</p>
+      </section>
+
+      <section class="content">
+        <div class="lesson-map">
+          <aside class="map-index">
+            <h3>Lesson Map</h3>
+            <p>1. 小块而不是贴纸</p>
+            <p>2. 天真计数</p>
+            <p>3. 三条隐藏律</p>
+            <p>4. 合法配置定理</p>
+            <p>5. 最终公式</p>
+          </aside>
+
+          <div>
+            <div class="premium-box">
+              <h2>本讲结论</h2>
+              <p>三阶魔方的合法状态数是：</p>
+              <div class="formula">43,252,003,274,489,856,000</div>
+              <p>它来自：</p>
+              <div class="formula">8! · 3<sup>7</sup> · 12! · 2<sup>11</sup> / 2</div>
+            </div>
+
+            <h2 style="margin-top: 34px;">给购买编号魔方的读者</h2>
+            <p>编号魔方的作用不是装饰，而是让 <span class="small-formula">σ</span> 和 <span class="small-formula">τ</span> 可以被直接读出来：角块编号对应 <span class="small-formula">S₈</span>，棱块编号对应 <span class="small-formula">S₁₂</span>。当我们写出一个 cycle，例如 <span class="small-formula">(2 5 7 3)</span>，它就可以在实体魔方上被追踪。</p>
+
+            <div class="grid-2">
+              <div class="card theorem">
+                <h3>正式定理</h3>
+                <p>配置 <span class="small-formula">(σ, τ, x, y)</span> 合法，当且仅当：</p>
+                <p class="small-formula">sgn(σ)=sgn(τ)</p>
+                <p class="small-formula">Σxᵢ=0 mod 3</p>
+                <p class="small-formula">Σyⱼ=0 mod 2</p>
+              </div>
+              <div class="card intuition">
+                <h3>一句话理解</h3>
+                <p>拆装能产生所有想象态，但转动只能留在一个被三条守恒律切出来的世界里。</p>
+              </div>
+            </div>
+
+            <h2 style="margin-top: 34px;">证明附录样式</h2>
+            <div class="proof">
+              <p><b>证明。</b> 必要性来自每个生成元 <span class="small-formula">U,D,L,R,F,B</span> 对三个量的保持。充分性通过构造性复原完成：先复位角块位置，再修正角块朝向，再复位棱块位置，最后修正棱块朝向。三个约束分别保证这些步骤不会在最后一步卡住。</p>
+              <p>因此合法配置的数量为 <span class="small-formula">8! · 3⁷ · 12! · 2¹¹ / 2</span>。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+</body>
+</html>

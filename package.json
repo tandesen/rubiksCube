@@ -1,0 +1,11 @@
+{
+  "name": "cubic-lesson-01-animation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "cube-assets": "node scripts/generate_cube_assets.mjs"
+  },
+  "dependencies": {
+    "cubing": "^0.63.3"
+  }
+}

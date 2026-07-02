@@ -1,0 +1,6 @@
+index,start_time,end_time,duration_seconds,method,note
+1,00:00:00.000,00:00:05.923,5.923,PySceneDetect detect-adaptive,brand and cognitive hook
+2,00:00:05.923,00:02:50.462,164.539,PySceneDetect detect-adaptive,main group axioms and visual rule explanation
+3,00:02:50.462,00:03:59.448,68.986,PySceneDetect detect-adaptive,musical analogy and notation segment
+4,00:03:59.448,00:04:26.183,26.735,PySceneDetect detect-adaptive,final cube and music synthesis
+5,00:04:26.183,00:04:36.234,10.052,PySceneDetect detect-adaptive,TED-Ed end card

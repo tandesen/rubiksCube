@@ -1,0 +1,92 @@
+{
+  "video": {
+    "fps": 23.976023976023978,
+    "total_frames": 6623,
+    "duration_seconds": 276.23429166666665
+  },
+  "py_scene_detect": {
+    "content_scene_count": 10,
+    "content_average_scene_length": 27.623,
+    "adaptive_scene_count": 5,
+    "adaptive_average_scene_length": 55.247,
+    "content_cut_times": [
+      "00:00:05.923",
+      "00:02:09.004",
+      "00:02:28.607",
+      "00:02:29.816",
+      "00:02:31.026",
+      "00:02:32.235",
+      "00:03:59.448",
+      "00:04:26.183",
+      "00:04:36.151"
+    ],
+    "adaptive_cut_times": [
+      "00:00:05.923",
+      "00:02:50.462",
+      "00:03:59.448",
+      "00:04:26.183"
+    ]
+  },
+  "opencv": {
+    "sampled_seconds": 276,
+    "mean_brightness": 0.7723,
+    "mean_saturation": 0.5437,
+    "mean_edge_density": 0.0388,
+    "mean_motion_energy": 0.028,
+    "highest_motion_seconds": [
+      {
+        "timecode": "00:01.000",
+        "motion_energy": 0.915,
+        "dominant_hue_family": "orange"
+      },
+      {
+        "timecode": "00:07.000",
+        "motion_energy": 0.3565,
+        "dominant_hue_family": "blue"
+      },
+      {
+        "timecode": "00:33.000",
+        "motion_energy": 0.2552,
+        "dominant_hue_family": "orange"
+      },
+      {
+        "timecode": "02:10.000",
+        "motion_energy": 0.2421,
+        "dominant_hue_family": "red/magenta"
+      },
+      {
+        "timecode": "02:09.000",
+        "motion_energy": 0.2373,
+        "dominant_hue_family": "blue"
+      },
+      {
+        "timecode": "04:27.000",
+        "motion_energy": 0.2227,
+        "dominant_hue_family": "orange"
+      },
+      {
+        "timecode": "00:37.000",
+        "motion_energy": 0.2164,
+        "dominant_hue_family": "green/cyan"
+      },
+      {
+        "timecode": "04:21.000",
+        "motion_energy": 0.2017,
+        "dominant_hue_family": "orange"
+      },
+      {
+        "timecode": "00:52.000",
+        "motion_energy": 0.1684,
+        "dominant_hue_family": "blue"
+      },
+      {
+        "timecode": "02:28.000",
+        "motion_energy": 0.1635,
+        "dominant_hue_family": "magenta"
+      }
+    ],
+    "scene_metrics_file": "research/opencv_scene_metrics_adaptive.csv",
+    "frame_metrics_file": "research/opencv_frame_metrics_1fps.csv",
+    "chart_file": "research/opencv_visual_metrics_chart.jpg"
+  }
+}

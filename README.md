@@ -1,0 +1,84 @@
+# Cubic
+
+Cubic is 德森's Rubik's cube and group theory education project.
+
+The project combines:
+
+- Public-facing short and medium-form videos about 2x2 and 3x3 Rubik's cubes.
+- Rigorous group-theoretic course notes and proofs for viewers who want depth.
+- Physical cube sales bundled with course links, PDFs, and learning materials.
+
+Core positioning:
+
+> Make abstract algebra feel concrete through the Rubik's cube, without sacrificing mathematical rigor where rigor matters.
+
+## Current Founder Context
+
+- Founder: 谭德森.
+- Background: undergraduate degree in e-commerce at Harbin Institute of Technology; master's study in pure mathematics at ANU.
+- Mathematical interest: group theory, algebra, geometry, topology, and rigorous proof.
+- Current work: data analysis / data science.
+- Career transition: leaving the current company near the end of June 2026 to pursue entrepreneurship full-time.
+- Existing audience: 小红书 account `德森大老爷`, roughly 2,000 followers.
+
+## Project Documents
+
+- [memory/project_context.md](memory/project_context.md) - durable project memory.
+- [docs/strategy.md](docs/strategy.md) - positioning, risks, and business model.
+- [docs/roadmap.md](docs/roadmap.md) - phased execution plan.
+- [docs/content_syllabus.md](docs/content_syllabus.md) - course/video curriculum.
+- [docs/collaboration.md](docs/collaboration.md) - how 德森 and Codex should work together.
+
+## Lesson 01 Animation Project
+
+This repository now includes a runnable animation scaffold for the first "群论与魔方" video.
+
+Inputs:
+
+- [scripts/lesson_01_opening_voiceover_draft.md](scripts/lesson_01_opening_voiceover_draft.md) - current opening voiceover draft.
+- [report.md](report.md) - reference style and structure analysis.
+- [research/reference_scene_detection.csv](research/reference_scene_detection.csv) - reference scene timing table.
+
+Generated project files:
+
+- [manim_scenes/lesson_01_opening.py](manim_scenes/lesson_01_opening.py) - Manim scenes for the 30-second opening demo.
+- [scripts/generate_cube_assets.mjs](scripts/generate_cube_assets.mjs) - cubing.js-based cube state metadata and SVG asset generator.
+- [assets/generated](assets/generated) - generated cube SVGs and `cube_states.json`.
+- [render.sh](render.sh) - one-command render pipeline.
+
+Requirements:
+
+- Homebrew `ffmpeg`.
+- Homebrew `pkg-config`, `cairo`, and `pango` for Manim.
+- Node.js and npm.
+- Python 3.12 virtualenv at `.venv`.
+
+Already installed in this workspace:
+
+- Manim Community `0.20.1` in `.venv`.
+- `cubing` npm package `0.63.3`.
+
+Run:
+
+```bash
+./render.sh
+```
+
+Output:
+
+```text
+renders/lesson_01_opening_demo.mp4
+```
+
+The current demo has two Manim scenes:
+
+- `OpeningScaleScene`: small cube, fixed centers, huge state count, Big Bang timeline, Earth surface analogy.
+- `GroupTheoryBridgeScene`: state cloud, group theory concept diagram, commutator reveal, series title card.
+
+If `.venv` is missing, recreate it with:
+
+```bash
+/opt/homebrew/bin/python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip manim
+npm install
+```

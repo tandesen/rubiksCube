@@ -1,0 +1,363 @@
+{
+  "generatedBy": "scripts/generate_cube_assets.mjs",
+  "library": "cubing",
+  "puzzle": "3x3x3",
+  "states": [
+    {
+      "id": "solved",
+      "label": "Solved",
+      "alg": "",
+      "image": "assets/generated/cube_state_solved.svg",
+      "pattern": {
+        "experimentalPuzzleName": "3x3x3",
+        "patternData": {
+          "EDGES": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "CORNERS": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "CENTERS": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "orientationMod": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "r_turn",
+      "label": "R",
+      "alg": "R",
+      "image": "assets/generated/cube_state_r_turn.svg",
+      "pattern": {
+        "experimentalPuzzleName": "3x3x3",
+        "patternData": {
+          "EDGES": {
+            "pieces": [
+              0,
+              8,
+              2,
+              3,
+              4,
+              10,
+              6,
+              7,
+              5,
+              9,
+              1,
+              11
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "CORNERS": {
+            "pieces": [
+              4,
+              0,
+              2,
+              3,
+              7,
+              5,
+              6,
+              1
+            ],
+            "orientation": [
+              2,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              2
+            ]
+          },
+          "CENTERS": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "orientationMod": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "r_u",
+      "label": "R U",
+      "alg": "R U",
+      "image": "assets/generated/cube_state_r_u.svg",
+      "pattern": {
+        "experimentalPuzzleName": "3x3x3",
+        "patternData": {
+          "EDGES": {
+            "pieces": [
+              8,
+              2,
+              3,
+              0,
+              4,
+              10,
+              6,
+              7,
+              5,
+              9,
+              1,
+              11
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "CORNERS": {
+            "pieces": [
+              0,
+              2,
+              3,
+              4,
+              7,
+              5,
+              6,
+              1
+            ],
+            "orientation": [
+              1,
+              0,
+              0,
+              2,
+              1,
+              0,
+              0,
+              2
+            ]
+          },
+          "CENTERS": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "orientationMod": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "commutator",
+      "label": "A B A^-1 B^-1",
+      "alg": "R U R' U'",
+      "image": "assets/generated/cube_state_commutator.svg",
+      "pattern": {
+        "experimentalPuzzleName": "3x3x3",
+        "patternData": {
+          "EDGES": {
+            "pieces": [
+              0,
+              8,
+              1,
+              3,
+              4,
+              5,
+              6,
+              7,
+              2,
+              9,
+              10,
+              11
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "CORNERS": {
+            "pieces": [
+              4,
+              2,
+              1,
+              3,
+              0,
+              5,
+              6,
+              7
+            ],
+            "orientation": [
+              2,
+              2,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          "CENTERS": {
+            "pieces": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "orientation": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "orientationMod": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
