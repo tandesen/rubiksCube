@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Route A Course Theme</title>
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #e9c76d;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!--
+    课程版入口。
+    核心魔方逻辑仍在 route_a_css3d.html，避免复制两份状态/转动代码。
+    这里通过 query 参数切换到 TED-like 浅色背景，并隐藏字幕，便于和 Manim/剪辑软件合成。
+  -->
+  <iframe id="demo" src="./route_a_css3d.html?theme=course&captions=0"></iframe>
+
+  <script>
+    const demo = document.getElementById('demo');
+
+    window.demoConfig = { totalSeconds: 7.5, fps: 24 };
+    window.__demoReady = false;
+
+    demo.addEventListener('load', () => {
+      window.__demoReady = true;
+    });
+
+    window.setFrame = function setFrame(frame, fps = 24) {
+      demo.contentWindow.setFrame(frame, fps);
+    };
+  </script>
+</body>
+</html>

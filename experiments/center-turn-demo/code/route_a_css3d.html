@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Route A CSS3D Center Turns</title>
+  <style>
+    /* Route A 是完全自写的 CSS 3D 版本：每个 cubelet 是一个 DOM 节点，每张贴纸是一个 div。 */
+    :root {
+      color-scheme: dark;
+      --red: #c00;
+      --white: #eee;
+      --blue: #25d;
+      --green: #092;
+      --orange: #e60;
+      --yellow: #fc0;
+      --plastic: #050505;
+      --highlight-strength: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at center, #444 0%, #000 90%);
+      font-family: Arial, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    }
+
+    html[data-theme="course"] body {
+      /*
+        课程版背景：偏 TED-Ed 的明亮卡通纸面。
+        用多层渐变做轻微纹理和色块，避免纯色背景和实体魔方割裂。
+      */
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.22) 0 2px, transparent 2.5px),
+        radial-gradient(circle at 72% 18%, rgba(255, 255, 255, 0.18) 0 2px, transparent 2.5px),
+        linear-gradient(145deg, rgba(95, 177, 165, 0.22) 0 22%, transparent 22% 100%),
+        linear-gradient(26deg, transparent 0 60%, rgba(214, 105, 75, 0.18) 60% 72%, transparent 72% 100%),
+        #e9c76d;
+      background-size:
+        34px 34px,
+        42px 42px,
+        100% 100%,
+        100% 100%,
+        100% 100%;
+    }
+
+    html[data-theme="transparent"],
+    html[data-theme="transparent"] body {
+      /*
+        透明素材版的彩色 pass。最终 alpha 由 render_with_chrome.mjs
+        额外渲染黑白 mask 后用 ffmpeg alphamerge 合成。
+      */
+      background: #e9c76d;
+    }
+
+    html[data-theme="mask"],
+    html[data-theme="mask"] body {
+      background: #000;
+    }
+
+    html[data-theme="transparent"] .caption,
+    html[data-theme="mask"] .caption {
+      display: none;
+    }
+
+    html[data-theme="course"],
+    html[data-theme="transparent"],
+    html[data-theme="mask"] {
+      --plastic: #172321;
+    }
+
+    html[data-theme="mask"] .face,
+    html[data-theme="mask"] .sticker {
+      background: #fff !important;
+      box-shadow: none !important;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      perspective: 1450px;
+      perspective-origin: 50% 48%;
+    }
+
+    .cube-root {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      transform: translate3d(0, 10px, 0) rotateX(-21deg) rotateY(-34deg);
+    }
+
+    .cubelet {
+      position: absolute;
+      width: 112px;
+      height: 112px;
+      margin: -56px 0 0 -56px;
+      transform-style: preserve-3d;
+    }
+
+    .cubelet.turning {
+      z-index: 20;
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      box-sizing: border-box;
+      padding: 7px;
+      background: var(--plastic);
+      /*
+        每个 cubelet 都有 6 个塑料面；彩色贴纸只放在外露面。
+        旋转时露出的内部/背面应该显示黑色塑料，而不是页面背景或贴纸反面。
+      */
+      backface-visibility: visible;
+      transform-style: preserve-3d;
+    }
+
+    .sticker {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      opacity: 0.97;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      transition: box-shadow 80ms linear, transform 80ms linear;
+      backface-visibility: hidden;
+    }
+
+    .red { background: var(--red); }
+    .white { background: var(--white); }
+    .blue { background: var(--blue); }
+    .green { background: var(--green); }
+    .orange { background: var(--orange); }
+    .yellow { background: var(--yellow); }
+
+    /* 中心块高亮：只改变可见三面中心块的贴纸，不改变魔方状态。 */
+    .center-highlight .sticker {
+      transform: translateZ(var(--highlight-lift, 2px)) scale(var(--highlight-scale, 1.08));
+      box-shadow:
+        0 0 22px rgba(255, 255, 255, var(--highlight-white-alpha, 0.95)),
+        0 0 42px rgba(255, 210, 80, var(--highlight-warm-alpha, 0.72)),
+        inset 0 0 0 3px rgba(255, 255, 255, var(--highlight-inset-alpha, 0.85));
+    }
+
+    /* 高亮中心时压暗周围块，帮助观众明确“中心块”这个对象。 */
+    .dimmed .sticker {
+      opacity: var(--dim-opacity, 0.34);
+    }
+
+    .caption {
+      position: fixed;
+      left: 64px;
+      bottom: 70px;
+      color: #fff;
+      font-size: 38px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
+      white-space: pre-line;
+    }
+
+    html[data-theme="course"] .caption {
+      display: none;
+    }
+
+    html[data-theme="course"] .cube-root {
+      transform: translate3d(0, -6px, 0) rotateX(-20deg) rotateY(-35deg);
+    }
+
+    html[data-theme="course"] .face {
+      padding: 8px;
+      background: var(--plastic);
+    }
+
+    html[data-theme="course"] .sticker {
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.10),
+        0 2px 4px rgba(30, 24, 12, 0.16);
+    }
+
+    html[data-theme="transparent"] .sticker {
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+    }
+
+    .move-label {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div id="cube" class="cube-root"></div>
+  </div>
+  <div id="caption" class="caption"></div>
+  <div id="moveLabel" class="move-label"></div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const theme = params.get('theme') || 'dark';
+    const showCaptions = params.get('captions') !== '0';
+    document.documentElement.dataset.theme = theme;
+
+    // 几何尺寸：SIZE 是每个小方块边长，GAP 是小方块中心之间的距离。
+    const SIZE = 112;
+    const GAP = 113;
+    const HALF = SIZE / 2;
+    const TOTAL_SECONDS = 7.5;
+    const CENTER_HIGHLIGHT_START = 0.55;
+    const CENTER_HIGHLIGHT_RAMP = 0.46;
+    const CENTER_HIGHLIGHT_END = CENTER_HIGHLIGHT_START + 1.5;
+    const BACKSIDE_FADE_START = 0.05;
+    const BACKSIDE_FADE_END = 0.32;
+    const ROOT_VIEW_MATRIX = multiply(
+      rotateMatrix('x', (-21).degreesToRadians ? (-21).degreesToRadians() : -21 * Math.PI / 180),
+      rotateMatrix('y', (-34).degreesToRadians ? (-34).degreesToRadians() : -34 * Math.PI / 180)
+    );
+
+    // 六个面的初始朝向和颜色。坐标约定：front 是 z=1，right 是 x=1，up 是 y=-1。
+    const faceDefs = [
+      { name: 'front', normal: [0, 0, 1], transform: `rotateX(0deg) translateZ(${HALF}px)`, color: 'white' },
+      { name: 'back', normal: [0, 0, -1], transform: `rotateY(180deg) translateZ(${HALF}px)`, color: 'yellow' },
+      { name: 'right', normal: [1, 0, 0], transform: `rotateY(90deg) translateZ(${HALF}px)`, color: 'green' },
+      { name: 'left', normal: [-1, 0, 0], transform: `rotateY(-90deg) translateZ(${HALF}px)`, color: 'blue' },
+      { name: 'up', normal: [0, -1, 0], transform: `rotateX(90deg) translateZ(${HALF}px)`, color: 'red' },
+      { name: 'down', normal: [0, 1, 0], transform: `rotateX(-90deg) translateZ(${HALF}px)`, color: 'orange' }
+    ];
+
+    // 分镜动作。start/duration 控制每个动作在视频时间线上的开始时间和持续时间。
+    // axis/layer/angle 描述转哪一层；这里依次是 F、R、U，对应中文“前、右、上”。
+    // 三个动作首尾相接，没有额外停顿。
+    const moves = [
+      { axis: 'z', layer: 1, angle: -Math.PI / 2, start: 3.0, duration: 0.82 },
+      { axis: 'x', layer: 1, angle: -Math.PI / 2, start: 3.82, duration: 0.82 },
+      { axis: 'y', layer: -1, angle: -Math.PI / 2, start: 4.64, duration: 0.82 }
+    ];
+
+    // baseCubies 保存 27 个小方块的初始身份和坐标。后面每一帧都会从这里重新计算，保证可重复渲染。
+    const baseCubies = [];
+    for (let x = -1; x <= 1; x += 1) {
+      for (let y = -1; y <= 1; y += 1) {
+        for (let z = -1; z <= 1; z += 1) {
+          baseCubies.push({ id: `${x},${y},${z}`, pos: [x, y, z], matrix: identity() });
+        }
+      }
+    }
+
+    const cubeEl = document.getElementById('cube');
+    const captionEl = document.getElementById('caption');
+    const moveLabelEl = document.getElementById('moveLabel');
+    const cubieEls = new Map();
+
+    // 创建 DOM：只生成外露面。每个外露面本身是黑色塑料底，贴纸背面隐藏；
+    // 因此旋转时看到的“背面”会是黑色塑料，而不是彩色贴纸反面。
+    for (const cubie of baseCubies) {
+      const el = document.createElement('div');
+      el.className = 'cubelet';
+      el.dataset.id = cubie.id;
+
+      for (const face of faceDefs) {
+        if (!isOuterFace(cubie.pos, face.normal)) continue;
+        const faceEl = document.createElement('div');
+        faceEl.className = `face face-${face.name}`;
+        faceEl.dataset.normal = face.normal.join(',');
+        faceEl.style.transform = face.transform;
+
+        const sticker = document.createElement('div');
+        sticker.className = `sticker ${face.color}`;
+        faceEl.appendChild(sticker);
+        el.appendChild(faceEl);
+      }
+
+      cubeEl.appendChild(el);
+      cubieEls.set(cubie.id, el);
+    }
+
+    function identity() {
+      return [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ];
+    }
+
+    function multiply(a, b) {
+      return a.map((row, r) => row.map((_, c) => (
+        a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c]
+      )));
+    }
+
+    function rotateMatrix(axis, angle) {
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      if (axis === 'x') return [[1, 0, 0], [0, c, -s], [0, s, c]];
+      if (axis === 'y') return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
+      return [[c, -s, 0], [s, c, 0], [0, 0, 1]];
+    }
+
+    function rotateVector(v, matrix, shouldRound) {
+      const result = [
+        matrix[0][0] * v[0] + matrix[0][1] * v[1] + matrix[0][2] * v[2],
+        matrix[1][0] * v[0] + matrix[1][1] * v[1] + matrix[1][2] * v[2],
+        matrix[2][0] * v[0] + matrix[2][1] * v[1] + matrix[2][2] * v[2]
+      ];
+      return shouldRound ? result.map((n) => Math.round(n)) : result;
+    }
+
+    function isAffected(cubie, move) {
+      const axisIndex = { x: 0, y: 1, z: 2 }[move.axis];
+      return Math.round(cubie.pos[axisIndex]) === move.layer;
+    }
+
+    function applyMove(cubies, move) {
+      const matrix = rotateMatrix(move.axis, move.angle);
+      for (const cubie of cubies) {
+        if (!isAffected(cubie, move)) continue;
+        cubie.pos = rotateVector(cubie.pos, matrix, true);
+        cubie.matrix = multiply(matrix, cubie.matrix);
+      }
+    }
+
+    function easeOutQuart(t) {
+      return 1 - Math.pow(1 - t, 4);
+    }
+
+    function isOuterFace(pos, normal) {
+      return normal.every((component, index) => component === 0 || pos[index] === component);
+    }
+
+    // 计算某一秒时魔方的逻辑状态：已经完成的转动会真正改变 cubie 坐标。
+    function stateAt(seconds) {
+      const cubies = baseCubies.map((cubie) => ({
+        id: cubie.id,
+        pos: cubie.pos.slice(),
+        matrix: identity()
+      }));
+      let activeMove = null;
+
+      for (const move of moves) {
+        const end = move.start + move.duration;
+        if (seconds >= end) {
+          applyMove(cubies, move);
+        } else if (seconds >= move.start) {
+          activeMove = move;
+          break;
+        } else {
+          break;
+        }
+      }
+
+      return { cubies, activeMove };
+    }
+
+    // 把 3x3 旋转矩阵和位置转换成 CSS matrix3d，浏览器用它来摆放每个 cubelet。
+    function matrix3d(matrix, pos) {
+      const tx = pos[0] * GAP;
+      const ty = pos[1] * GAP;
+      const tz = pos[2] * GAP;
+      return [
+        matrix[0][0], matrix[1][0], matrix[2][0], 0,
+        matrix[0][1], matrix[1][1], matrix[2][1], 0,
+        matrix[0][2], matrix[1][2], matrix[2][2], 0,
+        tx, ty, tz, 1
+      ].map((n) => Number(Math.abs(n) < 0.000001 ? 0 : n).toFixed(6)).join(',');
+    }
+
+    // 高亮阶段有缓入，不再从全亮状态瞬间跳到“周围暗压”。
+    function centerHighlightStrength(seconds) {
+      if (seconds < CENTER_HIGHLIGHT_START || seconds >= CENTER_HIGHLIGHT_END) return 0;
+      const rampIn = Math.min(1, (seconds - CENTER_HIGHLIGHT_START) / CENTER_HIGHLIGHT_RAMP);
+      const rampOut = Math.min(1, (CENTER_HIGHLIGHT_END - seconds) / 0.18);
+      return smoothstep(Math.min(rampIn, rampOut));
+    }
+
+    function smoothstep(t) {
+      return t * t * (3 - 2 * t);
+    }
+
+    // 当前镜头能看到 front/right/up 三个中心块，所以只高亮这三个。
+    function isVisibleCenter(cubieId) {
+      return cubieId === '0,0,1' || cubieId === '1,0,0' || cubieId === '0,-1,0';
+    }
+
+    function updateBacksideVisibility(el, matrix, stickerOpacity, activeMove, turnProgress) {
+      for (const faceEl of el.children) {
+        const normal = faceEl.dataset.normal.split(',').map(Number);
+        const cubeNormal = rotateVector(normal, matrix, false);
+        const cameraNormal = rotateVector(cubeNormal, ROOT_VIEW_MATRIX, false);
+        const fadeProgress = clamp(
+          (cameraNormal[2] - BACKSIDE_FADE_START) / (BACKSIDE_FADE_END - BACKSIDE_FADE_START),
+          0,
+          1
+        );
+        const faceAlpha = smoothstep(fadeProgress);
+        const axisIndex = activeMove ? { x: 0, y: 1, z: 2 }[activeMove.axis] : -1;
+        const isTurnSideSticker = activeMove && Math.abs(normal[axisIndex]) !== 1;
+        const turnSideAlpha = isTurnSideSticker ? 1 - 0.86 * Math.sin(Math.PI * turnProgress) : 1;
+        const sticker = faceEl.firstElementChild;
+        sticker.style.opacity = (stickerOpacity * faceAlpha * turnSideAlpha).toFixed(3);
+      }
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    // 渲染器会逐帧调用这个函数；你手动预览时也可以在控制台调用 window.setFrame(96, 24)。
+    function setFrame(frame, fps = 24) {
+      const seconds = Math.min(TOTAL_SECONDS, frame / fps);
+      const { cubies, activeMove } = stateAt(seconds);
+      const highlightStrength = centerHighlightStrength(seconds);
+
+      for (const cubie of cubies) {
+        let pos = cubie.pos;
+        let matrix = cubie.matrix;
+        let turnProgress = 0;
+
+        // activeMove 是“正在转”的那一层；这里计算它的中间角度，让动画有连续过程。
+        if (activeMove && isAffected(cubie, activeMove)) {
+          turnProgress = easeOutQuart((seconds - activeMove.start) / activeMove.duration);
+          const partial = rotateMatrix(activeMove.axis, activeMove.angle * turnProgress);
+          pos = rotateVector(cubie.pos, partial, false);
+          matrix = multiply(partial, cubie.matrix);
+        }
+
+        const el = cubieEls.get(cubie.id);
+        const isHighlightedCenter = highlightStrength > 0 && isVisibleCenter(cubie.id);
+        const isDimmedCubie = highlightStrength > 0 && !isVisibleCenter(cubie.id);
+        const stickerOpacity = isDimmedCubie ? 1 - highlightStrength * 0.66 : 0.97;
+        el.classList.toggle('turning', Boolean(activeMove && isAffected(cubie, activeMove)));
+        el.style.transform = `matrix3d(${matrix3d(matrix, pos)})`;
+        updateBacksideVisibility(el, matrix, stickerOpacity, activeMove && turnProgress > 0 ? activeMove : null, turnProgress);
+        el.style.setProperty('--dim-opacity', (1 - highlightStrength * 0.66).toFixed(3));
+        el.style.setProperty('--highlight-lift', `${(highlightStrength * 2).toFixed(3)}px`);
+        el.style.setProperty('--highlight-scale', (1 + highlightStrength * 0.08).toFixed(3));
+        el.style.setProperty('--highlight-white-alpha', (highlightStrength * 0.95).toFixed(3));
+        el.style.setProperty('--highlight-warm-alpha', (highlightStrength * 0.72).toFixed(3));
+        el.style.setProperty('--highlight-inset-alpha', (highlightStrength * 0.85).toFixed(3));
+        el.classList.toggle('center-highlight', isHighlightedCenter);
+        el.classList.toggle('dimmed', isDimmedCubie);
+      }
+
+      // 字幕时间线：这里改文案最直接。
+      if (!showCaptions) {
+        captionEl.textContent = '';
+      } else if (seconds < 2.75) {
+        captionEl.textContent = '保持各面中心不动';
+      } else if (seconds < 6.0) {
+        captionEl.textContent = '任意转动魔方';
+      } else {
+        captionEl.textContent = '中心仍然标定每个面';
+      }
+
+      moveLabelEl.textContent = '';
+    }
+
+    window.setFrame = setFrame;
+    window.demoConfig = { totalSeconds: TOTAL_SECONDS, fps: 24 };
+
+    setFrame(Number(params.get('frame') || 0), Number(params.get('fps') || 24));
+  </script>
+</body>
+</html>

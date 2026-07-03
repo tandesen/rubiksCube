@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Route D Cuber API Center Turns</title>
+  <!-- Route D 复用 iamthecu.be/Cuber 的 CSS 和 JS，只在本页写分镜控制代码。 -->
+  <link rel="stylesheet" href="../../../research/iamthecube/styles/cube.css">
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at center, #444 0%, #000 90%);
+      font-family: Arial, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    }
+
+    #container {
+      position: fixed;
+      inset: 0;
+    }
+
+    .cube .sticker.red { background-color: #c00; }
+    .cube .sticker.white { background-color: #eee; }
+    .cube .sticker.blue { background-color: #25d; }
+    .cube .sticker.green { background-color: #092; }
+    .cube .sticker.orange { background-color: #e60; }
+    .cube .sticker.yellow { background-color: #fc0; }
+
+    .faceLabel {
+      display: none !important;
+    }
+
+    /*
+      Cuber 转动时会短暂显示 faceIntroverted 内部面，原始样式是纯黑。
+      这会在顶部贴纸上产生“闪黑”感；这里改为透明，只保留外露贴纸。
+    */
+    .cube .cubelet > .face.faceIntroverted {
+      background-color: transparent !important;
+    }
+
+    .cube .cubelet > .face.faceIntroverted > div {
+      display: none !important;
+    }
+
+    /* 只给三个中心块增加发光描边；周围块保持原始颜色、透明度和位置。 */
+    .cubelet.centerGlow .sticker {
+      box-shadow:
+        0 0 24px rgba(255, 255, 255, 0.95),
+        0 0 46px rgba(255, 208, 64, 0.8),
+        inset 0 0 0 4px rgba(255, 255, 255, 0.82);
+    }
+
+    .caption {
+      position: fixed;
+      left: 64px;
+      bottom: 70px;
+      color: #fff;
+      font-size: 38px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      text-shadow: 0 0 18px rgba(0, 0, 0, 0.85);
+      white-space: pre-line;
+      z-index: 4;
+    }
+
+    .move-label {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <div id="caption" class="caption">保持各面中心不动</div>
+  <div id="moveLabel" class="move-label"></div>
+
+  <script src="../../../research/iamthecube/scripts/cuber.min.js"></script>
+  <script src="../../../research/iamthecube/scripts/patches.js"></script>
+  <script>
+    const caption = document.getElementById('caption');
+    const moveLabel = document.getElementById('moveLabel');
+
+    // ERNO.Cube 来自 cuber.min.js。它会生成 27 个 cubelet 和对应的 CSS3D renderer。
+    window.cube = new ERNO.Cube();
+
+    // 摄像机和整体魔方角度：调这里可以改变“从哪里看魔方”。
+    cube.camera.position.z = 2600;
+    cube.camera.fov = 25;
+    cube.camera.updateProjectionMatrix();
+    cube.rotation.set(
+      (20).degreesToRadians(),
+      (-30).degreesToRadians(),
+      0
+    );
+    cube.position.y = 45;
+    cube.twistDuration = 720;
+    cube.opacityTweenDuration = 240;
+    cube.radiusTweenDuration = 240;
+    cube.autoRotate = false;
+    document.getElementById('container').appendChild(cube.renderer.domElement);
+
+    // Cuber 内置了 face/center/corner/edge 的对象结构，所以可以直接拿到三个可见中心块。
+    const visibleCenters = new ERNO.Group(
+      cube.front.center,
+      cube.up.center,
+      cube.right.center
+    );
+
+    // 高亮只通过 CSS class 完成，不调用 setOpacity/setRadius，避免周围块变透明或分离。
+    function glowCenters(on) {
+      visibleCenters.cubelets.forEach((cubelet) => {
+        cubelet.css3DObject.element.classList.toggle('centerGlow', on);
+      });
+    }
+
+    // 高亮阶段固定保持 1.5 秒，不闪烁。
+    function holdCenters(delay, duration = 1500) {
+      window.setTimeout(() => {
+        caption.textContent = '保持各面中心不动';
+        glowCenters(true);
+      }, delay);
+      window.setTimeout(() => {
+        glowCenters(false);
+      }, delay + duration);
+    }
+
+    // 转动阶段只保留一句字幕；三个动作一次入队，避免中间人为停顿。
+    function startTurns(delay) {
+      window.setTimeout(() => {
+        caption.textContent = '任意转动魔方';
+        moveLabel.textContent = '';
+        cube.twist('FRU');
+      }, delay);
+    }
+
+    // render_with_chrome.mjs 会在页面加载后调用 window.startDemo()，再逐帧截图。
+    window.startDemo = function startDemo() {
+      cube.twistQueue.future = [];
+      cube.historyQueue.future = [];
+      cube.setOpacity(1).setRadius(0).showPlastics().showStickers().hideIds().hideTexts().hideWireframes();
+      glowCenters(false);
+
+      holdCenters(450);
+
+      startTurns(3000);
+
+      window.setTimeout(() => {
+        caption.textContent = '中心仍然标定每个面';
+      }, 5900);
+    };
+
+    window.__demoReady = true;
+  </script>
+</body>
+</html>

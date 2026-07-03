@@ -1,266 +1,511 @@
-# 参考视频风格与结构分析
+# iamthecu.be 魔方技术与视觉分析
 
-参考视频：`research/Ted-How-to-play-a-Rubik-s.mp4`  
-分析日期：2026-07-02  
-目标：为“群论与魔方”系列第一支视频建立可迁移的视频结构、视觉语言和 30 秒 demo 方案。
+分析对象：<https://iamthecu.be/>  
+本地缓存：`research/iamthecube/`  
+分析日期：2026-07-03
 
-## 1. 抽帧与镜头切分
+## 0. 工具与环境说明
 
-已按每 1 秒抽取 1 帧：
+`codex` 命令确实没有在当前 zsh 的 `PATH` 中。我已在 `~/.zshrc` 追加：
 
-```bash
-mkdir -p frames
-ffmpeg -hide_banner -y -i research/Ted-How-to-play-a-Rubik-s.mp4 -vf fps=1 frames/frame_%04d.jpg
+```sh
+export PATH="/Applications/Codex.app/Contents/Resources:$PATH"
 ```
 
-结果：
+新终端会直接生效；已打开的终端需要运行 `source ~/.zshrc`。
 
-- `frames/` 中有 276 张 JPG。
-- 视频时长：276.23 秒，约 4 分 36 秒。
-- 分辨率：1920 x 1080。
-- 帧率：23.98 fps。
+同时已执行：
 
-PySceneDetect 重新切分后，建议保留两套口径：
+```sh
+codex mcp add chrome-devtools -- npx -y chrome-devtools-mcp@latest
+```
 
-| 口径 | 方法 | 镜头/场景数 | 平均长度 | 用途 |
-| --- | --- | ---: | ---: | --- |
-| 主场景口径 | `detect-adaptive` | 5 | 55.25 秒 | 判断章节结构 |
-| 敏感口径 | `detect-content` | 10 | 27.62 秒 | 发现短促视觉段落和转场峰值 |
+`codex mcp list` 已显示 `chrome-devtools` 为 enabled。重启 Codex 后，当前会话已经可以调用 `mcp__chrome_devtools`，并成功打开真实页面 `https://iamthecu.be/`。本报告结论已用 DevTools 的 Network、Console、Snapshot、Runtime evaluate 做过复查。
 
-主场景表：
+DevTools 实测补充：
 
-| # | 起点 | 终点 | 时长 | 内容判断 |
-| --- | --- | --- | ---: | --- |
-| 1 | 00:00.000 | 00:05.923 | 5.923s | TED-Ed 品牌与“思考”开场 |
-| 2 | 00:05.923 | 02:50.462 | 164.539s | 群论公理、点/符号/魔方的主解释段 |
-| 3 | 02:50.462 | 03:59.448 | 68.986s | 音乐类比与记号段 |
-| 4 | 03:59.448 | 04:26.183 | 26.735s | 魔方和乐谱的综合收束 |
-| 5 | 04:26.183 | 04:36.234 | 10.052s | TED-Ed end card |
+- 页面请求总数 37 个。
+- 运行时没有 `<canvas>`，`.cubelet` 为 27 个，`.cubelet > .face` 为 162 个，`.sticker` 为 54 个。
+- 运行时暴露 `cube`、`ERNO`、`THREE`、`TWEEN`、`_`、`help`。
+- `cube.twistDuration` 为 1000，`ERNO.Cube.prototype.twistDuration` 为 700。
+- `cube.camera.position.z` 为 2800，`cube.camera.fov` 为 25。
 
-相关输出：
+## 1. 主要 JS/CSS 文件
 
-- 主场景 CSV：`research/reference_scenes_adaptive.csv`
-- 敏感场景 CSV：`research/reference_scenes_content.csv`
-- 简化主场景表：`research/reference_scene_detection.csv`
-- 主场景中帧图：`research/scenes_adaptive_contact_sheet.jpg`
-- 敏感场景中帧图：`research/scenes_content_contact_sheet.jpg`
+HTML 入口在 `research/iamthecube/index.html`。主要资源如下：
 
-## 2. OpenCV 画面指标
-
-OpenCV 每秒采样后计算了四类指标：
-
-- `brightness`：整体亮度。
-- `saturation`：色彩饱和度。
-- `edge_density`：线条/文字/细节密度。
-- `motion_energy`：相邻秒之间的画面变化强度。
-
-输出文件：
-
-- 每秒指标：`research/opencv_frame_metrics_1fps.csv`
-- 主场景指标：`research/opencv_scene_metrics_adaptive.csv`
-- 汇总 JSON：`research/opencv_visual_summary.json`
-- 指标图：`research/opencv_visual_metrics_chart.jpg`
-
-全片平均值：
-
-| 指标 | 均值 | 解读 |
-| --- | ---: | --- |
-| brightness | 0.7723 | 整体偏明亮，不走暗色科技感 |
-| saturation | 0.5437 | 中高饱和，靠色块建立章节感 |
-| edge_density | 0.0388 | 大多数画面线条不密，保留大量留白 |
-| motion_energy | 0.0280 | 运动整体克制，靠少数转场峰值制造节奏 |
-
-主场景风格指标：
-
-| 场景 | 主色倾向 | 饱和度 | 亮度 | 边缘密度 | 运动强度 | 说明 |
-| --- | --- | ---: | ---: | ---: | ---: | --- |
-| 1 | orange | 0.0390 | 0.7687 | 0.0578 | 0.1669 | 低饱和品牌开场，运动峰值高 |
-| 2 | green/cyan | 0.5071 | 0.7394 | 0.0337 | 0.0301 | 主讲解段，平稳、清晰、少硬切 |
-| 3 | blue | 0.7499 | 0.7917 | 0.0244 | 0.0121 | 音乐类比段，最稳定、最少运动 |
-| 4 | orange | 0.5120 | 0.9157 | 0.0813 | 0.0263 | 收束段更亮，符号和乐谱线条更多 |
-| 5 | orange | 0.0639 | 0.7977 | 0.1014 | 0.0249 | end card，文字按钮导致边缘密度最高 |
-
-新的结论：这条视频不是靠高频剪辑维持注意力，而是靠“色块章节 + 连续动画 + 少数强转场峰值”组织节奏。
-
-## 3. 开头 15 秒如何抓注意力
-
-PySceneDetect 在 5.923 秒检测到第一个明确场景切换。也就是说，开头不是一个完整 15 秒长镜头，而是：
-
-- 0-6 秒：TED-Ed 头部/大脑图像，建立“思考、学习、解释”的语境。
-- 6-15 秒：切到魔方和标题式视觉，快速明确主题。
-
-OpenCV 指标显示，开头 15 秒平均饱和度只有 0.1164，远低于全片均值 0.5437；运动峰值出现在 1 秒和 7 秒附近。也就是说，开头不是用大量信息轰炸观众，而是先用低饱和、低复杂度画面建立注意力，再在切到魔方时制造一次明显变化。
-
-可迁移到你的第一集：
-
-- 不要一上来讲“群论”“抽象代数”“置换群”。
-- 先让观众感到一个反差：手里的小魔方，对应一个巨大到不合直觉的状态空间。
-- 视觉上先低复杂度：一只手、一个三阶魔方、一个问题。
-- 第一个强变化点放在巨大数字出现时，而不是放在片头 logo 或自我介绍上。
-
-你的开场可以这样组织：
-
-| 时间 | 画面 | 作用 |
+| 类型 | 文件 | 作用 |
 | --- | --- | --- |
-| 0-3s | 手里一个真实三阶魔方，背景干净 | 建立“小玩具” |
-| 3-6s | 六个中心块被锁定，其他块轻微转动 | 解释“中心固定” |
-| 6-10s | 数字 `43,252,003,274,489,856,000` 逐位出现并超出画面 | 建立巨大反差 |
-| 10-15s | 数字缩成一个点，点扩散成状态网格 | 从“数量震撼”过渡到“数学结构” |
+| CSS | `styles/cube.css` | 魔方 DOM 结构样式：`.cube`、`.cubelet`、`.face`、`.sticker`、`.wireframe`、贴纸圆角和基础颜色。 |
+| CSS | `styles/explorer.css` | 页面布局、背景、导航、文字板、站点级贴纸颜色覆盖、玻璃模式颜色覆盖。 |
+| JS | `scripts/bowser.min.js` | 浏览器检测。 |
+| JS | `scripts/cuber.min.js` | Cuber 核心框架，内含旧版 `THREE`、`TWEEN`、`CSS3DRenderer`、`Cube`、`Cubelet`、`Slice`、`Queue`、`Twist`。 |
+| JS | `scripts/patches.js` | 对 Cuber 的补丁，包括 `inspect()`、`showLogo()`、`hideLogo()`、默认动画时长修正、`shuffle()`、`undo()`。 |
+| JS | `scripts/buttons.js` | 底部交互按钮：Grid、Glass、Cubelets 高亮、Labels、Rotate、Realign、Shuffle、Undo、Demo。 |
+| JS | `scripts/demos.js` | 自动演示脚本和分镜任务队列。 |
+| JS | `scripts/explorer.js` | 页面启动入口，创建 `window.cube`，调整相机，入场动画，控制台 help，键盘/鼠标交互。 |
+| 外部 JS | `https://www.google-analytics.com/analytics.js` | Google Analytics。 |
+| 字体 | `media/fonts/Rubik.otf`、`media/fonts/RubikExtended.otf` | 标题、面标签、文字板字体。 |
+| 图片 | `media/buttons/*.png`、`media/share/*.png`、`media/badges/*.png`、`media/rubiksLogoClassic.png` | 底部按钮、分享按钮、Chrome Cube Lab 标识、白色中心 logo 贴纸。 |
 
-## 4. 旁白和画面如何配合
+证据位置：
 
-参考视频的规则很明确：旁白负责命名概念，画面负责把概念变成可操作对象。
+- `index.html` 第 13-22 行列出 CSS/JS。
+- `index.html` 第 23-30 行加载 Google Analytics。
+- DevTools Network 复查显示 `styleGrid.png`、`styleGlass.png`、`highlightCenters.png` 等按钮图标也会在页面加载后请求。
+- 本地文件大小：`cuber.min.js` 约 120 KB，是核心文件。
 
-它很少把旁白逐字翻译成画面，而是让画面承担一个稳定的认知任务：
+## 2. 魔方实现方式
 
-- 讲 group theory 时，画面给出点、圆、路径和组合关系。
-- 讲 closure / associativity / identity / inverse 时，每个公理都有对应图标和运动模式。
-- 讲复杂类比时，画面切换到另一套符号系统，比如乐谱，但保留“圆圈、排列、操作”的共同语法。
-- 旁白每推进一个逻辑关系，画面只做一个动作：合并、旋转、返回、交换、圈出。
+结论：这是 Three.js 对象模型加 CSS 3D DOM 渲染，不是 Canvas，也不是 WebGL。
 
-迁移到你的口播稿：
+关键证据：
 
-- “保持魔方各面中心朝向不变”：画面锁定 6 个中心块，边角块围绕中心运动。
-- “一共有多少种不同状态”：同一个魔方复制成很多小缩略图，但不要铺满太久，避免变成装饰。
-- “从宇宙大爆炸开始”：用时间轴和进度条，不用泛泛的宇宙素材。
-- “群论大显身手”：让无序状态缩成几个结构标签：`corner permutation`、`edge permutation`、`orientation`、`parity`。
-- “交换子”：固定使用 `A B A^-1 B^-1` 的四步动画语法，后续系列继续沿用。
+- `cuber.min.js` 定义 `THREE.CSS3DObject` 和 `THREE.CSS3DRenderer`，通过 DOM 元素和 CSS `matrix3d(...)` 渲染，见 `cuber.min.js` 第 262-267 行。
+- Cuber 默认 renderer 是 `ERNO.renderers.CSS3D`，见 `cuber.min.js` 第 340 行。
+- renderer 会创建 `THREE.CSS3DRenderer`，把 cube、camera 和 face labels 放进 CSS3D scene，见 `cuber.min.js` 第 328-330 行。
+- 每个 cubelet 被渲染为一个 DOM `div.cubelet` 和 6 个 DOM face，见 `cuber.min.js` 第 331-334 行。
+- 搜索本地源码没有发现 `<canvas>`、`WebGLRenderer`、`CanvasRenderer`、`getContext()`。
 
-## 5. 画面风格
-
-颜色：
-
-- 高饱和但不刺眼，背景多为整块色域。
-- 背景常带纸纹或轻微噪声，避免纯矢量画面太冷。
-- 每个章节有明显色彩身份：绿/青、洋红、蓝、橙。
-- 魔方本身永远保持高对比色，是全片的视觉锚点。
-
-线条：
-
-- 细线、虚线圆、箭头、简单图标反复出现。
-- 虚线圆通常暗示循环、操作轨道或被研究的局部系统。
-- 线条不追求复杂，重要的是语义稳定。
-
-构图：
-
-- 主体通常在中间三分之一。
-- 辅助符号围绕主体出现，不抢主物体。
-- 大量留白让抽象概念显得可读。
-- 文本像标签，不像 PPT 段落。
-
-转场：
-
-- 少硬切，多连续变形、滑动、淡入淡出、颜色场景切换。
-- 敏感检测在 2:28-2:32 抓到连续 1.21 秒短段落，说明那里有一组快速视觉变奏。
-- 这些短段落不是传统剪辑，而是动画内部的节拍点。
-
-## 6. 可以迁移到“群论与魔方”的设计原则
-
-第一，魔方必须是认知锚点，不只是装饰。
-
-每讲一个抽象概念，都回到一个可见的魔方状态。公式可以出现，但应该在观众已经看懂视觉关系之后出现。
-
-第二，用颜色做数学 bookkeeping。
-
-建议固定：
-
-- 角块：一种强调色。
-- 棱块：另一种强调色。
-- 朝向：小旋转箭头。
-- 置换：路径、循环箭头或虚线圈。
-- 不合法状态：降低饱和度，加锁或交叉标记。
-
-第三，先让观众“看见不变量”，再说术语。
-
-比如不要先说“奇偶性约束”。先展示“只交换两个块”的尝试失败，再解释这是因为角块排列和棱块排列的奇偶性必须一致。
-
-第四，公式要作为总结出现。
-
-状态总数公式可以这样展开：
+所以更准确的分类是：
 
 ```text
-8! * 3^8 * 12! * 2^12
+Three.js scene graph
++ THREE.CSS3DRenderer
++ DOM div faces
++ CSS transform-style: preserve-3d
++ TWEEN.js animation
 ```
 
-先让观众看到这是“天真的数法”，再逐个扣掉三个隐藏约束：
+## 3. cubelets 的 DOM/对象结构
+
+### 对象结构
+
+`window.cube = new ERNO.Cube()` 在 `explorer.js` 第 44 行创建。
+
+`ERNO.Cube` 内部结构：
+
+- `cube.cubelets`：27 个 `ERNO.Cubelet`，包括不可见/可隐藏的 core。
+- `cube.core`、`cube.centers`、`cube.edges`、`cube.corners`、`cube.crosses`：按类型分组。
+- `cube.front`、`cube.up`、`cube.right`、`cube.down`、`cube.left`、`cube.back`：6 个面 slice。
+- `cube.left/middle/right`、`cube.up/equator/down`、`cube.front/standing/back`：9 个实体 slice。
+- `cube.slicesDictionary`：把 `f/s/b/u/e/d/r/m/l/x/y/z` 映射到 slice 或整 cube rotation slice。
+
+证据：`cuber.min.js` 第 341-349 行。
+
+`ERNO.Cubelet`：
+
+- 继承 `THREE.Object3D`。
+- `id` 为 0-26。
+- `addressX/Y/Z` 表示当前格位地址；转动后会随 slice mapping 更新。
+- `id` 和 DOM class `cubeletId-N` 是 cubelet 身份，`cube.cubelets[index]` 的 index 更接近当前位置映射。DevTools 运行时复查时，页面 demo 已经转动过，`cube.cubelets[0].id` 不一定是 0，这验证了“身份”和“位置”要分开理解。
+- `faces` 长度为 6，顺序是 `front, up, right, down, left, back`。
+- `type` 根据外露颜色数计算：`core`、`center`、`edge`、`corner`。
+- `front/up/right/down/left/back` 是 `faces[0..5]` 的别名。
+
+证据：`cuber.min.js` 第 291-294 行。
+
+### DOM 结构
+
+每个 cubelet 的 DOM 大致为：
+
+```html
+<div class="cubelet cubeletId-0">
+  <div class="face axisZ faceFront faceExtroverted">
+    <div class="wireframe"></div>
+    <div class="id"><span class="underline">0</span></div>
+    <div class="sticker white stickerLogo"></div>
+    <div class="text">0</div>
+  </div>
+  <div class="face axisY faceUp faceExtroverted">...</div>
+  <div class="face axisX faceRight faceIntroverted">...</div>
+  <div class="face axisY faceDown faceIntroverted">...</div>
+  <div class="face axisX faceLeft faceExtroverted">...</div>
+  <div class="face axisZ faceBack faceIntroverted">...</div>
+</div>
+```
+
+实际是否 `faceExtroverted` 取决于该 cubelet 这一面有没有颜色。没有颜色的内面是 `faceIntroverted`，背景黑色。每个 face 都先创建 `.wireframe` 和 `.id`，外露面再创建 `.sticker` 和 `.text`。
+
+证据：`cuber.min.js` 第 331-334 行，`cube.css` 第 68-78、96-135、167-212、223-275 行。
+
+每个 face 的 CSS 3D 方向由 inline transform 控制：
+
+| Face | transform 逻辑 |
+| --- | --- |
+| front | `rotateX(0deg) translateZ(size/2)` |
+| up | `rotateX(90deg) translateZ(size/2)` |
+| right | `rotateY(90deg) translateZ(size/2)` |
+| down | `rotateX(-90deg) translateZ(size/2) rotateZ(90deg)` |
+| left | `rotateY(-90deg) translateZ(size/2) rotateZ(-90deg)` |
+| back | `rotateY(180deg) translateZ(size/2) rotateZ(-90deg)` |
+
+证据：`cuber.min.js` 第 331-333 行。
+
+## 4. 旋转动画：缓动、时长、触发方式
+
+### 默认和页面修正时长
+
+Cuber 核心默认 `twistDuration` 是 500ms，见 `cuber.min.js` 第 341 行。`patches.js` 又把 prototype 默认改为：
+
+```js
+ERNO.Cube.prototype.opacityTweenDuration = 200
+ERNO.Cube.prototype.radiusTweenDuration = 100
+ERNO.Cube.prototype.twistDuration = 700
+```
+
+见 `patches.js` 第 452-454 行。
+
+页面启动时又对实例设置：
+
+```js
+cube.twistDuration = 1000
+```
+
+见 `explorer.js` 第 92 行。
+
+demo 中会临时调节：
+
+- 复原用 `twistDuration = 50`，见 `demos.js` 第 47-49 行。
+- 中心演示用 `1000` 后改回 `500`，见 `demos.js` 第 401-408 行。
+- 统计演示用 `300`，见 `demos.js` 第 542-543 行。
+
+### 单次 twist 动画
+
+`cube.twist(...)` 只把动作放进 `twistQueue`。真正执行发生在 `loop()` 中，等 cube ready 且没有 tween 后调用 `immediateTwist()`。
+
+`immediateTwist()` 核心逻辑：
+
+- 找到对应 slice：`this.slicesDictionary[a.command.toLowerCase()]`。
+- 把目标角度转成弧度。
+- 动画时长按角度比例计算：`abs(targetRotation - currentRotation) / (0.5 * PI) * twistDuration`。
+- 对 slice 自身做 `new TWEEN.Tween(slice).to({ rotation }, duration)`。
+- 缓动：`TWEEN.Easing.Quartic.Out`。
+- 完成后更新 cubelet 矩阵和 slice/group mapping，触发 `onTwistComplete`。
+
+证据：`cuber.min.js` 第 352-357 行。
+
+### 入场动画
+
+页面开场不是简单显示魔方，而是做“反向爆炸组合”：
+
+- 整体位置：`y = -2000` 到 `y = 90`，2 秒，`Quartic.Out`。
+- 整体旋转：`(120, 420, 20)` 度到 `(20, -30, 0)` 度，4 秒，`Quartic.Out`。
+- 每个 cubelet 从 `addressX/Y/Z * 1000` 的爆炸位置回到原位，持续 1 秒，`Quintic.Out`。
+- cubelet 延迟按类型错开：core 0ms，center 200-500ms，edge 800-1000ms，corner 1100-1500ms。
+
+证据：`explorer.js` 第 62-92、98-158 行。
+
+### 触发方式
+
+触发入口：
+
+- 控制台：`cube.twist('rdRD')` 或 `cube.twist('rdRD'.multiply(6))`。
+- 键盘：`XxRrMmLlYyUuEeDdZzFfSsBb` 直接触发 twist，见 `cuber.min.js` 第 349-350 行。
+- 方向键：左/右/上/下映射到 `Y/y/X/x`，见 `explorer.js` 第 413-416 行。
+- 鼠标/触摸拖拽：`ERNO.Interaction` 用 ray/plane 交点判断被拖动的 cubelet 和 slice，然后调用 `cube.twist(new ERNO.Twist(...))`，见 `cuber.min.js` 第 317-323 行。
+- 页面按钮：`buttons.js` 控制 rotate、realign、shuffle、undo、demo，见 `buttons.js` 第 296-335 行。
+
+## 5. 颜色、贴纸、玻璃、阴影、相机视角
+
+### 背景与页面
+
+背景是黑色径向渐变：
+
+```css
+radial-gradient(ellipse at center, #444 0%, #000 90%)
+```
+
+证据：`explorer.css` 第 18-27 行。
+
+底部 footer 是深灰线性渐变，分享按钮默认 `opacity: 0.1`，hover 变 1，见 `explorer.css` 第 541-600 行。
+
+### 贴纸颜色
+
+`cube.css` 有一套基础颜色，但站点实际覆盖为：
+
+| 颜色 | CSS |
+| --- | --- |
+| red | `#C00` |
+| white | `#EEE` |
+| blue | `#25D` |
+| green | `#092` |
+| orange | `#E60` |
+| yellow | `#FC0` |
+
+证据：`explorer.css` 第 95-102 行。
+
+贴纸本身：
+
+- `.sticker` 宽高 100%。
+- `border-radius: 0.1em`。
+- face 有 `padding: 0.05em`，所以能看到黑色塑料边框。
+
+证据：`cube.css` 第 96-107、193-199 行。
+
+### 玻璃效果
+
+Glass 模式不是 shader，也不是真正的 WebGL 透明材质。它给所有 `.cubelet` 加 `.purty`：
+
+```js
+document.querySelectorAll('.cubelet').forEach(e => e.classList.add('purty'))
+```
+
+见 `buttons.js` 第 157-164 行。
+
+`.purty` 的效果：
+
+- `.purty .face { opacity: 0.5; }`
+- face 背景直接变成六面颜色。
+- `.purty .sticker { background-color: transparent !important; }`
+
+基础定义见 `cube.css` 第 141-148 行；站点覆盖面色见 `explorer.css` 第 105-112 行。
+
+预览图 `research/iamthecube/media/cubeExplorer.jpg` 显示的就是这种玻璃风格：半透明彩色面片互相叠色，边缘没有真实光照阴影，视觉上靠 CSS opacity 和面片重叠形成“玻璃”感。
+
+![iamthecu.be preview](research/iamthecube/media/cubeExplorer.jpg)
+
+### Grid 和高亮
+
+Grid 模式：
+
+- `cube.showWireframes().hidePlastics().hideStickers()`
+- wireframe 是 2px 半透明白边，背景 `rgba(255,255,255,0.05)`。
+
+证据：`buttons.js` 第 140-153 行，`cube.css` 第 167-181 行。
+
+Cubelets 高亮：
+
+- included group 维持 `opacity = 1`。
+- excluded group 设为 `opacity = 0.15`。
+
+证据：`buttons.js` 第 205-214 行。
+
+### 阴影
+
+魔方块面本身没有传统 `box-shadow`。视觉深度主要来自：
+
+- CSS 3D perspective。
+- 黑色 introverted/internal faces。
+- 透明面片重叠。
+- 文字 label 和 board 的 `text-shadow`。
+
+Face label 的阴影见 `cube.css` 第 47-55 行；board 文字阴影见 `explorer.css` 第 117-137 行。
+
+### 相机视角
+
+Cuber 默认：
+
+- `PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 6000)`。
+- `camera.position.z = 4 * cube.size`。
+- 初始 cube rotation：x 25 deg，y -30 deg，z 0。
+
+证据：`cuber.min.js` 第 341-342 行。
+
+Explorer 页面覆盖：
+
+- `camera.position.z = 2800`。
+- `camera.fov = 25`。
+- 入场后最终 rotation：x 20 deg，y -30 deg，z 0。
+
+证据：`explorer.js` 第 52-85 行。
+
+默认 `textureSize = 120`，所以 `size = 360`，`cubeletSize = 120`，renderer DOM 的 `fontSize` 也是 `120px`，见 `cuber.min.js` 第 340-348 行。
+
+## 6. 暴露的 console API
+
+页面在 `window` 暴露：
+
+- `window.cube`
+- `window.ERNO`
+- `window._`
+- `window.TWEEN`
+- `window.THREE`
+- `window.help`
+
+证据：`explorer.js` 第 313-332 行，`cuber.min.js` 第 361-364 行。
+
+页面 help 和 HTML 文案明确鼓励在控制台使用：
+
+```js
+cube.twist('rdRD'.multiply(6))
+cube.inspect()
+cube.front.inspect()
+cube.front.northEast.inspect()
+cube.front.northWest.up.color.name
+cube.standing.setOpacity(0.5)
+cube.corners.setRadius(90)
+cube.hasColors(ERNO.RED, ERNO.BLUE).showIds()
+cube.showIds().setOpacity(0.1).core.setOpacity()
+cube.hasAddress(0).setOpacity()
+cube.hasAddress(26).setOpacity()
+```
+
+证据：`index.html` 第 115-134 行，`explorer.js` 第 313-329 行。
+
+补丁 API：
+
+- `ERNO.Cubelet.prototype.inspect(face)`：输出 cubelet 的 ID、type、address、engaged/tweening 状态和各面颜色，见 `patches.js` 第 138-190 行。
+- `ERNO.Group.prototype.inspect(face)`：遍历 group 内 cubelets，见 `patches.js` 第 270-277 行。
+- `ERNO.Slice.prototype.inspect(compact, side)`：输出 3x3 slice 的彩色 ASCII 图，见 `patches.js` 第 289-360 行。
+- `ERNO.Cube.prototype.inspect(compact, side)`：依次 inspect 六个面，见 `patches.js` 第 459-469 行。
+- `ERNO.Cube.prototype.showLogo()` / `hideLogo()`：控制白色中心贴纸 logo，见 `patches.js` 第 564-575 行。
+
+常用对象/组 API：
+
+- `cube.twist(...)`、`cube.shuffle()`、`cube.undo()`、`cube.redo()`、`cube.isSolved()`。
+- `cube.showIds()`、`hideIds()`、`showTexts()`、`hideTexts()`、`showWireframes()`、`hideWireframes()`、`showPlastics()`、`hidePlastics()`、`showStickers()`、`hideStickers()`。
+- `cube.setOpacity(value)`、`cube.setRadius(value)`。
+- `cube.hasColor(color)`、`cube.hasColors(...)`、`cube.hasAddress(n)`、`cube.hasType(type)`。
+- Slice/group selectors such as `cube.front.northEast`、`cube.front.east`、`cube.centers`、`cube.edges`、`cube.corners`、`cube.standing`。
+
+## 7. 本地复刻或录制路线
+
+### 路线 A：复刻同风格 CSS 3D demo
+
+最接近原站的做法是 Three.js `CSS3DRenderer`。
+
+建议结构：
 
 ```text
-3, 2, 2
+Scene
+  Object3D cubeRoot
+    Object3D cubelet[27]
+      CSS3DObject div.cubelet
+        div.face.faceFront
+          div.sticker.white
+        div.face.faceUp
+        div.face.faceRight
+        div.face.faceDown
+        div.face.faceLeft
+        div.face.faceBack
 ```
 
-最后得到：
+关键视觉参数：
+
+```css
+body {
+  background: radial-gradient(ellipse at center, #444 0%, #000 90%);
+}
+
+.cubelet {
+  position: absolute;
+  width: 1em;
+  height: 1em;
+}
+
+.face {
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  padding: 0.05em;
+  background: #000;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.sticker {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.1em;
+}
+
+.glass .face {
+  opacity: 0.5;
+}
+```
+
+转动实现：
+
+1. 维护 27 个 cubelet 的 logical address。
+2. 每次 move 选择 slice cubelets。
+3. 把它们临时挂到一个 pivot group。
+4. tween pivot rotation 到 90 deg。
+5. 动画完成后把 cubelet 世界矩阵 bake 回各自 Object3D，并更新 logical address。
+
+这个路线最适合课程视频，因为 DOM face/sticker 可以直接做文字、编号、半透明、边框、高亮，不需要处理 shader。
+
+### 路线 B：Three.js WebGL demo
+
+如果目标是更稳定的视频渲染、真实阴影、景深和灯光，建议用 WebGL：
+
+- 每个 cubelet 用 `BoxGeometry`。
+- 每个可见面使用单独 material。
+- 黑色塑料边框可用略大的黑色 cubelet 加彩色贴纸 plane，或用 bevel geometry。
+- 玻璃模式用 `transparent: true`、`opacity: 0.45`，再加 `depthWrite: false` 和排序控制。
+- 课程渲染可用固定相机 `fov = 25`，rotation 约 x 20 deg、y -30 deg。
+
+WebGL 的优点是录制稳定、像素一致、可以加阴影。缺点是做出原站那种 DOM/贴纸文字/console inspect 风格会更麻烦。
+
+### 路线 C：cubing.js 做状态与算法，Three/CSS 做画面
+
+当前项目已有 `cubing@0.63.3`。本机验证可用导出：
+
+```js
+import { Alg, Move } from 'cubing/alg'
+import { cube3x3x3 } from 'cubing/puzzles'
+import { KPuzzle, KPattern, KTransformation } from 'cubing/kpuzzle'
+```
+
+建议分工：
+
+- `cubing/alg`：解析课程脚本中的算法，如 `new Alg("R U R' U'")`。
+- `cubing/kpuzzle` 或 puzzle 定义：维护合法状态、验证算法、生成状态。
+- 自己的 renderer：只负责把每一步 move 动画出来。
+
+也就是说，`cubing.js` 不负责复刻 iamthecu.be 的视觉，适合作为“魔方状态真相层”。这样课程视频里所有转动、交换子、复原步骤都可验证，不靠手写状态更新猜。
+
+### 路线 D：直接用 iamthecu.be API 录制
+
+可行，但不建议作为长期课程生产主线。
+
+可以在浏览器 console 里驱动：
+
+```js
+cube.twistDuration = 900
+cube.showIds()
+cube.corners.setRadius(90)
+cube.hasColors(ERNO.RED, ERNO.BLUE).setOpacity(1)
+cube.twist("RUruruUR")
+```
+
+录制方式：
+
+1. 用 Chrome DevTools MCP 或 Puppeteer 打开页面。
+2. 等待 `window.cube` 存在。
+3. 注入脚本设置相机、样式和动作队列。
+4. 使用 Chrome screencast 或逐帧 screenshot。
+5. 用 `ffmpeg` 合成视频。
+
+示例伪代码：
+
+```js
+await page.goto('https://iamthecu.be/')
+await page.waitForFunction('window.cube && window.cube.isReady')
+await page.evaluate(() => {
+  cube.twistDuration = 900
+  cube.showIds()
+  cube.corners.setRadius(90)
+  cube.twist("R U R' U'")
+})
+```
+
+风险：
+
+- 该站是老项目，依赖旧版 Three/TWEEN 和浏览器 CSS3D 行为。
+- 生产视频不应依赖第三方站点可用性。
+- 原站资源和代码授权需要单独确认，课程中直接使用应谨慎。
+
+### 推荐
+
+课程视频主线建议用：
 
 ```text
-8! * 3^7 * 12! * 2^11 / 2
+cubing.js 负责算法和状态
+Three.js WebGL 或 CSS3DRenderer 负责画面
+ffmpeg 负责合成
 ```
 
-第五，系列视频要建立稳定视觉语法。
-
-如果虚线圈在第一集表示“一个循环/一个局部操作系统”，后面就不要随便改成装饰。数学视频的视觉一致性比单集炫技更重要。
-
-## 7. 两个新包带来的新分析角度
-
-PySceneDetect 的价值：
-
-- 可以区分“主章节切分”和“敏感视觉节拍”。
-- `detect-adaptive` 更适合看结构，避免把连续动画里的小变化都当成剪辑。
-- `detect-content` 更适合找画面突然变化的位置，比如 2:28-2:32 的快速变奏。
-- 它能导出场景中帧图，后续可以快速做 storyboard 对照。
-
-OpenCV 的价值：
-
-- 可以量化亮度、饱和度、边缘密度和运动强度。
-- 可以判断一条片子的节奏到底来自剪辑、运动、颜色，还是画面复杂度。
-- 可以帮助你给自己的视频设定风格基线，比如“每个画面只承载一个动作”“文字密度不要超过某个参考段”。
-- 后续做 demo 时，可以用同样脚本比较你的 demo 和参考片：如果运动强度过高、边缘密度过高，说明画面可能太乱。
-
-一句话：PySceneDetect 让我们看结构，OpenCV 让我们看风格参数。
-
-## 8. 30 秒 demo 制作方案
-
-目标：验证第一集的开场风格，不要试图讲完整个系列。
-
-### 口播
-
-```text
-我手里这个三阶魔方，看起来只是一个巴掌大小的玩具。
-
-但如果我们固定六个中心块，只允许正常转动，
-它一共有多少种不同状态？
-
-答案是：
-43,252,003,274,489,856,000。
-
-这个数字太大了。
-如果从宇宙大爆炸开始，每秒记录一个新状态，
-一直到今天，也只看完了大约 1%。
-
-所以魔方难，不只是因为手法复杂。
-它里面真的藏着一个巨大的数学世界。
-```
-
-### 分镜
-
-| 时间 | 画面 | 动作 | 目的 |
-| --- | --- | --- | --- |
-| 0-4s | 真实手持三阶魔方或干净 3D 魔方 | 缓慢推近 | 建立“小物体” |
-| 4-7s | 六个中心块发光并锁住 | 外层轻微转动 | 解释计数前提 |
-| 7-12s | 巨大数字逐位出现 | 数字超出画面后镜头后退 | 制造尺度冲击 |
-| 12-19s | 138 亿年时间轴 | 进度条只走到 1% | 把大数变成直觉 |
-| 19-25s | 大量状态缩略图变成有结构的点阵 | 混乱收束为循环、箭头、分组 | 引出群论 |
-| 25-30s | 标题：群论与魔方 01 / 为什么状态数这么大？ | 魔方轻转一圈，标题稳定 | 建立系列入口 |
-
-### 风格建议
-
-- 运动不要太多。参考片平均运动强度很低，强变化点只在转场和重点处出现。
-- 开头 6 秒保持低复杂度，数字出现时再提高画面冲击力。
-- 背景用一到两个大色块，不要堆材质。
-- 数学符号只出现一个：`43,252,003,274,489,856,000`。不要在 30 秒 demo 里提前放 `8!`、`S_8`、`commutator`。
-- 保持 16:9 主版，同时让魔方、数字、标题都在中间安全区，后面方便裁成 9:16。
-
-### 验收标准
-
-- 不看字幕也能明白：小魔方对应巨大状态空间。
-- 看完 30 秒，观众知道这个系列不是普通魔方教程，而是用数学解释魔方。
-- 画面复杂度克制，只有数字出现和状态网格两个高潮点。
-- 视觉语法能延续到后续系列，而不是一次性包装。
+如果要复刻 iamthecu.be 的“玻璃、编号、文字板、console 可玩”风格，优先选 CSS3DRenderer。  
+如果要追求高质量课程成片和可控光影，优先选 Three.js WebGL。  
+如果要做数学/群论内容，`cubing.js` 应作为状态验证层，避免动画和魔方合法性脱节。

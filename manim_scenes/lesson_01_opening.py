@@ -35,6 +35,11 @@ def label(text: str, font_size: int = 28, color: str = MUTED) -> Text:
 
 
 def paper_background(color: str = PAPER, opacity: float = 1.0) -> VGroup:
+    """Flat color background with light paper grain.
+
+    This follows the reference video's large color-field style. Increase the
+    number of dots if you want a more textured TED-Ed paper look.
+    """
     bg = Rectangle(width=16.5, height=9.5, fill_color=color, fill_opacity=opacity, stroke_width=0)
     texture = VGroup()
     rng = np.random.default_rng(42)
@@ -47,6 +52,7 @@ def paper_background(color: str = PAPER, opacity: float = 1.0) -> VGroup:
 
 
 def sticker(points: list[np.ndarray], color: str) -> Polygon:
+    """Single sticker in the first draft's flat paper style."""
     return Polygon(
         *points,
         fill_color=color,
@@ -57,7 +63,11 @@ def sticker(points: list[np.ndarray], color: str) -> Polygon:
 
 
 def face_grid(origin: np.ndarray, u: np.ndarray, v: np.ndarray, colors: list[str]) -> VGroup:
-    group = VGroup()
+    """Build one visible 3x3 face.
+
+    This intentionally restores the first draft's simple square-sticker look.
+    """
+    face = VGroup()
     gap = 0.035
     for row in range(3):
         for col in range(3):
@@ -66,11 +76,13 @@ def face_grid(origin: np.ndarray, u: np.ndarray, v: np.ndarray, colors: list[str
             p1 = base + u / 3 - gap * u + gap * v
             p2 = base + u / 3 + v / 3 - gap * (u + v)
             p3 = base + v / 3 + gap * u - gap * v
-            group.add(sticker([p0, p1, p2, p3], colors[row * 3 + col]))
-    return group
+            face.add(sticker([p0, p1, p2, p3], colors[row * 3 + col]))
+    face.center_sticker = face[4]
+    return face
 
 
-def rubiks_cube(scale: float = 1.0, show_center_locks: bool = False) -> VGroup:
+def rubiks_cube(scale: float = 1.0) -> VGroup:
+    """First draft's flat Manim cube, plus center handles for blinking."""
     s = scale
     front_origin = np.array([-1.0, -1.0, 0.0]) * s
     x = np.array([2.0, 0.0, 0.0]) * s
@@ -85,23 +97,31 @@ def rubiks_cube(scale: float = 1.0, show_center_locks: bool = False) -> VGroup:
     top = face_grid(front_origin + y, x, depth, top_colors)
     right = face_grid(front_origin + x, depth, y, right_colors)
 
-    cube = VGroup(right, top, front)
-    cube.set_z_index(3)
-
-    if show_center_locks:
-        centers = VGroup(front[4].copy(), top[4].copy(), right[4].copy())
-        for item in centers:
-            item.set_fill(YELLOW, opacity=0.95)
-            item.set_stroke(WHITE, width=3)
-        lock_label = ctext("中心固定", font_size=28, color=WHITE).next_to(cube, DOWN, buff=0.25)
-        lock_label.add_background_rectangle(color=CHARCOAL, opacity=0.82, buff=0.16)
-        cube.add(centers, lock_label)
+    body = VGroup(right, top, front)
+    body.centers = VGroup(front.center_sticker, top.center_sticker, right.center_sticker)
+    body.set_z_index(3)
 
     shadow = Ellipse(width=2.6 * s, height=0.38 * s, fill_color=BLACK, fill_opacity=0.18, stroke_width=0)
-    shadow.move_to(cube.get_bottom() + DOWN * 0.18 + RIGHT * 0.35)
+    shadow.move_to(body.get_bottom() + DOWN * 0.18 + RIGHT * 0.35)
     shadow.set_z_index(1)
-    cube.add_to_back(shadow)
+
+    cube = VGroup(shadow, body)
+    cube.shadow = shadow
+    cube.body = body
     return cube
+
+
+def center_highlights(cube: VGroup) -> VGroup:
+    """Copies of the three visible center stickers used for one blink."""
+    highlights = VGroup()
+    for center in cube.body.centers:
+        highlight = center.copy()
+        highlight.scale(1.18, about_point=center.get_center())
+        highlight.set_fill(YELLOW, opacity=0.74)
+        highlight.set_stroke(WHITE, width=3.5, opacity=0.96)
+        highlights.add(highlight)
+    highlights.set_z_index(7)
+    return highlights
 
 
 def number_line() -> VGroup:
@@ -179,6 +199,7 @@ def group_theory_diagram() -> VGroup:
 
 class OpeningScaleScene(Scene):
     def construct(self) -> None:
+        # 0-3s: quiet opening. Keep the cube stable so the first visual claim is clear.
         self.add(paper_background(PAPER))
         title = ctext("一个巴掌大的玩具", 48, CHARCOAL)
         subtitle = label("到底能有多少种状态？", 32, MUTED)
@@ -186,26 +207,35 @@ class OpeningScaleScene(Scene):
         intro = VGroup(title, subtitle).arrange(DOWN, buff=0.2).to_edge(UP, buff=0.7)
 
         self.play(FadeIn(cube, shift=UP * 0.2), Write(intro), run_time=2.0)
-        self.play(cube.animate.scale(1.08).rotate(8 * DEGREES), run_time=1.0)
-        self.wait(0.4)
+        self.wait(0.6)
 
-        lock_cube = rubiks_cube(scale=0.95, show_center_locks=True).move_to(cube)
-        arrows = VGroup(
-            CurvedArrow(LEFT * 1.8 + UP * 0.2, LEFT * 1.2 + UP * 0.8, color=YELLOW),
-            CurvedArrow(RIGHT * 1.8 + DOWN * 0.2, RIGHT * 1.2 + DOWN * 0.8, color=YELLOW),
-        )
-        self.play(ReplacementTransform(cube, lock_cube), FadeOut(intro, shift=UP * 0.2), run_time=1.2)
-        self.play(Create(arrows), Rotate(lock_cube[0], angle=PI / 2, about_point=lock_cube[0].get_center()), run_time=1.2)
-        self.play(FadeOut(arrows), run_time=0.4)
-        self.wait(0.2)
+        # 3-5s: counting convention. The three visible center stickers blink
+        # three times. The cube-turn animation is intentionally omitted until
+        # we have a better 3D implementation.
+        center_label_text = ctext("中心固定", font_size=28, color=WHITE)
+        center_label_box = BackgroundRectangle(center_label_text, color=CHARCOAL, fill_opacity=0.78, buff=0.14)
+        center_label = VGroup(center_label_box, center_label_text)
+        center_label.set_z_index(8)
+        center_label.next_to(cube, DOWN, buff=0.28)
+        self.play(FadeOut(intro, shift=UP * 0.2), FadeIn(center_label), run_time=0.45)
+        for _ in range(3):
+            blink = center_highlights(cube)
+            self.play(FadeIn(blink, scale=1.08), run_time=0.08)
+            self.wait(0.14)
+            self.play(FadeOut(blink), run_time=0.08)
+        self.play(FadeOut(center_label), run_time=0.25)
+        self.wait(0.35)
 
+        # 6-12s: scale shock. Keep the cube small in the corner as a visual anchor.
         number_bg = paper_background(CHARCOAL)
         numbers = number_line()
-        self.play(FadeIn(number_bg), lock_cube.animate.scale(0.45).to_corner(DL, buff=0.65), run_time=1.0)
+        self.play(FadeIn(number_bg), cube.animate.scale(0.45).to_corner(DL, buff=0.65), run_time=1.0)
         self.play(Write(numbers[0]), run_time=1.2)
         self.play(FadeIn(numbers[1], shift=UP * 0.15), FadeIn(numbers[2], shift=UP * 0.15), run_time=0.8)
         self.wait(0.8)
 
+        # 12-20s: time analogy. The yellow progress line intentionally moves
+        # only about 1% of the full timeline.
         timeline_bg = paper_background(CYAN_BG)
         timeline = make_timeline()
         self.play(FadeOut(numbers), FadeIn(timeline_bg), run_time=0.7)
@@ -213,6 +243,8 @@ class OpeningScaleScene(Scene):
         self.play(GrowFromPoint(timeline[3], timeline[3].get_start()), FadeIn(timeline[4:]), run_time=1.4)
         self.wait(0.8)
 
+        # 20-30s: Earth-surface analogy. The rings are a visual shorthand for
+        # repeated layers, not a literal geographic map.
         earth = earth_layers().move_to(ORIGIN)
         self.play(FadeOut(timeline), FadeIn(paper_background(BLUE_BG)), run_time=0.5)
         self.play(FadeIn(earth[1:3], scale=0.9), run_time=0.7)
