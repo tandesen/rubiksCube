@@ -72,7 +72,7 @@ def depth_sort_cube(body: RubiksCube, camera, base: float = 3.0) -> None:
 
 def make_realistic_cube(scale: float = CUBE_SCALE) -> RubiksCube:
     """Create a darker cube with stronger seams, shading, and soft sheen."""
-    body = RubiksCube(colors=list(STICKER_COLORS))
+    body = RubiksCube(colors=list(STICKER_COLORS), shadow=False)
 
     for cubie in body.cubies.flatten():
         sticker_faces = set(get_faces_of_cubie(cubie.indices))
