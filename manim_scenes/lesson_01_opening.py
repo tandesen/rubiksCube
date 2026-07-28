@@ -139,7 +139,8 @@ def rubiks_cube(scale: float = 1.0) -> VGroup:
     orientation = cube_orientation()
 
 
-    body = RubiksCube(colors=list(CUBE_FACE_COLORS))
+    # shadow=False: this scene draws its own screen-space shadow below.
+    body = RubiksCube(colors=list(CUBE_FACE_COLORS), shadow=False)
     body.set_state(CUBE_SOLVED_STATE)
     body.set_stroke(CHARCOAL, width=1.4)
     body.apply_matrix(orientation)
@@ -172,7 +173,7 @@ def rubiks_cube_3d(scale: float = 1.0) -> VGroup:
     (perspective projection + phi/theta orientation). Face turns therefore use
     the plain ``CubeMove`` with canonical axes.
     """
-    body = RubiksCube(colors=list(CUBE_FACE_COLORS))
+    body = RubiksCube(colors=list(CUBE_FACE_COLORS), shadow=False)
     body.set_state(CUBE_SOLVED_STATE)
     body.set_stroke(CHARCOAL, width=1.4)
     body.scale(0.42 * scale).move_to(ORIGIN)
@@ -197,7 +198,7 @@ def rubiks_cube_3d(scale: float = 1.0) -> VGroup:
 
 def rubiks_cube_2x2_3d(scale: float = 1.0) -> VGroup:
     """Pocket cube using the same camera, palette, and shadow as the 3x3."""
-    body = RubiksCube2x2(colors=list(CUBE_FACE_COLORS))
+    body = RubiksCube2x2(colors=list(CUBE_FACE_COLORS), shadow=False)
     body.set_stroke(CHARCOAL, width=1.6)
     body.scale(0.63 * scale).move_to(ORIGIN)
 
