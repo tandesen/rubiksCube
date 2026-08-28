@@ -28,6 +28,7 @@ Core positioning:
 - [docs/roadmap.md](docs/roadmap.md) - phased execution plan.
 - [docs/content_syllabus.md](docs/content_syllabus.md) - course/video curriculum.
 - [docs/collaboration.md](docs/collaboration.md) - how 德森 and Codex should work together.
+- [business/README.md](business/README.md) - commercial partnerships and outreach materials.
 
 ## Lesson 01 Animation Project
 
@@ -41,6 +42,7 @@ Inputs:
 
 Generated project files:
 
+- [manim_scenes/rubikscube/](manim_scenes/rubikscube/) - reusable Rubik's cube toolkit for all lesson videos (cube mobjects, styles, moves, highlights, arrows, scene base class). See its [README](manim_scenes/rubikscube/README.md) for the usage guide.
 - [manim_scenes/lesson_01_opening.py](manim_scenes/lesson_01_opening.py) - Manim scenes for the 30-second opening demo.
 - [scripts/generate_cube_assets.mjs](scripts/generate_cube_assets.mjs) - cubing.js-based cube state metadata and SVG asset generator.
 - [assets/generated](assets/generated) - generated cube SVGs and `cube_states.json`.

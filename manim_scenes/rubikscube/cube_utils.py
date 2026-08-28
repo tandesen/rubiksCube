@@ -42,6 +42,29 @@ FACE_NORMALS = {
 }
 
 
+def normalize(vector) -> np.ndarray:
+    """Unit vector along ``vector`` (zero vector maps to zero)."""
+    v = np.asarray(vector, dtype=float)
+    norm = np.linalg.norm(v)
+    if norm < 1e-12:
+        return np.zeros(3)
+    return v / norm
+
+
+def plane_basis(normal: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Orthonormal basis ``(u, v, n)`` with ``n`` along ``normal``.
+
+    ``u`` and ``v`` span the plane perpendicular to ``normal``. Safe for any
+    direction, including straight up/down (where naive cross products with a
+    fixed helper vector would degenerate).
+    """
+    n = normalize(normal)
+    helper = np.array([0.0, 0.0, 1.0]) if abs(n[2]) < 0.9 else np.array([1.0, 0.0, 0.0])
+    u = normalize(np.cross(n, helper))
+    v = np.cross(n, u)
+    return u, v, n
+
+
 def get_axis_from_face(face: str) -> np.ndarray:
     """Outward rotation axis (unit vector) for a face turn, canonical frame."""
     return FACE_NORMALS[face.upper()].copy()
