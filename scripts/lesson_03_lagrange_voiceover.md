@@ -274,7 +274,7 @@ h1=h2.
 所以拉格朗日定理也就是说，subgroup 的 order 整除整个 group 的 order。
 
 
-假设一共有 `k` 个不同的 left cosets，那么：
+假设子群 `H` 一共有 `k` 个不同的 left cosets，那么：
 
 ```text
 |G|=k*|H|.
@@ -285,8 +285,6 @@ h1=h2.
 ```text
 [G:H] = k.
 ```
-
-这个群比较特殊，它是由一个元素生成的，我们也称这种群为 cyclic subgroup，循环群，记作 `⟨R⟩`。
 
 
 ---
@@ -375,6 +373,9 @@ Thistlethwaite 最初的算法保证最多用 `52` 步复原魔方，这是最�
 更准确地说，`⟨R⟩` 是由 `R` 生成的 cyclic subgroup。严谨地写，对于任意 `x∈G`，由 `x` 生成的 cyclic subgroup 是：
 
 ```text
+这个群比较特殊，它是由一个元素生成的，我们也称这种群为 cyclic subgroup，循环群，记作 `⟨R⟩`。
+
+
 ⟨x⟩={x^k:k ∈ ℤ}
    ={...,x^(-2),x^(-1),e,x,x^2,...}.
 ```
