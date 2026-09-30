@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="跟着德森，从一个魔方开始学习群论。用直观的动画理解群、置换与交换子，发现每次转动背后的数学。">
+  <meta name="theme-color" content="#fafafa">
+  <title>Math Cuber · 魔方与群论 — 德森大老爷</title>
+  <link rel="icon" type="image/png" href="assets/ts-logo.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="header">
+    <nav class="nav wrap" aria-label="主导航">
+      <a class="brand" href="#" aria-label="Math Cuber 首页"><img src="assets/ts-logo.png" width="40" height="40" alt=""><span>Math Cuber<span class="brand-divider"> / </span><span class="brand-cn">魔方 · 群论</span></span></a>
+      <div class="nav-links"><a href="#course">课程</a><a href="#creator">关于我</a><a class="nav-community" href="#community">一起学群论 <span aria-hidden="true">↗</span></a></div>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">3×3 CUBE & GROUP THEORY</p>
+        <h1 id="hero-title">转动之间，<br>看见<span class="blue">数学。</span></h1>
+        <p class="hero-description">从一个魔方开始，走进群论的世界。<br>和德森一起，理解每一步背后的为什么。</p>
+        <div class="hero-actions"><a class="button primary" href="#course">探索课程 <span aria-hidden="true">↓</span></a><a class="text-link" href="#community">加入学习交流 <span aria-hidden="true">↗</span></a><a class="button shop-shortcut" href="#shop">查看课程魔方 <span aria-hidden="true">↘</span></a></div>
+      </div>
+      <figure class="hero-art">
+        <div class="cube-stage"><img class="hero-cube" src="assets/cube.svg" alt="与课程包装相同的黄、蓝、红三色魔方插画" width="360" height="370"></div>
+        <figcaption><span class="tiny-colors" aria-hidden="true"><i></i><i></i><i></i></span> 一个魔方，无限好奇。</figcaption>
+      </figure>
+    </section>
+    <div class="intro-strip wrap"><span>不止于还原。</span><p>让抽象的概念，在手中变得具体。</p><span class="math-note" aria-hidden="true">⟨ R, U, F, L, D, B ⟩</span></div>
+
+    <section id="course" class="course section wrap" aria-labelledby="course-title">
+      <div class="section-heading"><div><p class="eyebrow">THE COURSE</p><h2 id="course-title">从好奇，到理解。</h2></div><p>用魔方建立直觉，用数学解释直觉。<br>从第一集开始，一步步认识群论。</p></div>
+      <div class="lesson-grid">
+        <details class="lesson">
+          <summary><span class="lesson-top"><span>01 / 状态空间</span><span class="lesson-expand" aria-hidden="true">+</span></span><span class="lesson-visual count-visual" aria-hidden="true">43<span>× 10<sup>18</sup></span></span><span class="lesson-title">一个魔方，有多少种可能？</span><span class="lesson-description">从庞大的状态空间出发，重新认识手中的三阶魔方。</span><span class="lesson-bottom">打开课程简介 <span aria-hidden="true">↗</span></span></summary>
+          <div class="lesson-detail"><p>角块的排列、棱块的排列，以及朝向的约束，共同决定了魔方的可能状态。第一集从这个计数问题开启数学之旅。</p><a class="platform-link" data-platform="bilibili" href="https://space.bilibili.com/698815643" target="_blank" rel="noopener noreferrer">前往 B 站主页 ↗</a></div>
+        </details>
+        <details class="lesson">
+          <summary><span class="lesson-top"><span>02 / 群的语言</span><span class="lesson-expand" aria-hidden="true">+</span></span><span class="lesson-visual group-visual" aria-hidden="true">( G, · )</span><span class="lesson-title">每一次转动，都有章法。</span><span class="lesson-description">从操作与组合出发，严谨地认识群的定义与魔方群。</span><span class="lesson-bottom">打开课程简介 <span aria-hidden="true">↗</span></span></summary>
+          <div class="lesson-detail"><p>把魔方操作看作群的元素，把连续操作看作群运算。通过具体转动，理解封闭性、结合律、单位元与逆元。</p><a class="platform-link" data-platform="bilibili" href="https://space.bilibili.com/698815643" target="_blank" rel="noopener noreferrer">前往 B 站主页 ↗</a></div>
+        </details>
+        <details class="lesson">
+          <summary><span class="lesson-top"><span>03 / 子群与陪集</span><span class="lesson-expand" aria-hidden="true">+</span></span><span class="lesson-visual subgroup-visual" aria-hidden="true">H <span>≤</span> G</span><span class="lesson-title">把复杂，拆成可以理解的。</span><span class="lesson-description">从子群与陪集，到拉格朗日定理，再走近降群算法。</span><span class="lesson-bottom">打开课程简介 <span aria-hidden="true">↗</span></span></summary>
+          <div class="lesson-detail"><p>理解陪集如何划分一个群，证明拉格朗日定理，并认识 Thistlethwaite 算法如何通过逐步限制操作来还原魔方。</p><a class="platform-link" data-platform="bilibili" href="https://space.bilibili.com/698815643" target="_blank" rel="noopener noreferrer">前往 B 站主页 ↗</a></div>
+        </details>
+      </div>
+      <div class="upcoming"><span class="upcoming-label">接下来，一起探索</span><p>置换与对称群 <span>/</span> 奇偶性与三循环 <span>/</span> 交换子与共轭</p><span class="coming-tag">后续课程</span></div>
+    </section>
+
+    <section id="creator" class="creator section" aria-labelledby="creator-title">
+      <div class="wrap creator-layout">
+        <div class="creator-intro"><p class="eyebrow">BEHIND THE CUBE</p><h2 id="creator-title">你好，我是德森。</h2><p class="creator-handle">也可以叫我「德森大老爷」。</p><p class="creator-description">我用魔方和动画，讲述群论里的概念与证明。<br>希望你记住的，不只是一个还原公式，<br>还有它为什么成立。</p><span class="signature">德森 <span> / Math Cuber</span></span></div>
+        <div class="social-list">
+          <a class="social-card" data-platform="bilibili" href="https://space.bilibili.com/698815643" target="_blank" rel="noopener noreferrer"><img src="assets/bilibili.png" alt="" width="48" height="48"><span><strong>B 站</strong><span>观看课程，一起把问题想明白。</span><small data-platform-label="bilibili">关注「德森大老爷」</small></span><span class="social-arrow" aria-hidden="true">↗</span></a>
+          <a class="social-card" data-platform="xiaohongshu" href="https://www.xiaohongshu.com/user/profile/5fed670f0000000001003c66" target="_blank" rel="noopener noreferrer"><img src="assets/xiaohongshu.png" alt="" width="48" height="48"><span><strong>小红书</strong><span>关注更新，发现魔方里的数学。</span><small data-platform-label="xiaohongshu">关注「德森大老爷」</small></span><span class="social-arrow" aria-hidden="true">↗</span></a>
+          <div class="social-card product-card" id="shop">
+            <img src="assets/cube.svg" alt="蓝、红、黄三色魔方插画，实际商品照片即将更新" width="58" height="60">
+            <div class="product-card-copy">
+              <strong>魔方 · 群论编号版</strong>
+              <span>课程配套的字母编号三阶魔方。</span>
+              <small id="shop-status">实拍与店铺链接即将更新</small>
+              <div class="shop-links"><a id="jd-shop" href="#" target="_blank" rel="noopener noreferrer" hidden>京东购买 ↗</a><a id="xiaohongshu-shop" href="#" target="_blank" rel="noopener noreferrer" hidden>小红书购买 ↗</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="community" class="community section wrap" aria-labelledby="community-title">
+      <div class="community-panel"><div><p class="eyebrow">LET’S FIGURE IT OUT</p><h2 id="community-title">一起转动，<br>一起想明白。</h2><p>带上你的魔方，也带上你的问题。<br>交流课程里的想法，分享转动中的发现。</p><button class="button light" type="button" data-open-wechat>微信学习交流 <span aria-hidden="true">↗</span></button></div><div class="community-formula" aria-hidden="true"><span>(1 2 3)</span><div></div><small>从一个小小的循环开始。</small></div></div>
+    </section>
+  </main>
+  <footer class="footer wrap"><a class="brand" href="#"><img src="assets/ts-logo.png" width="36" height="36" alt=""><span>Math Cuber</span></a><p>从一个魔方开始，学习群论。</p><span>© <span id="year">2026</span> 德森大老爷</span></footer>
+
+  <dialog id="wechat-dialog" aria-labelledby="wechat-title" aria-describedby="wechat-description">
+    <button class="dialog-close" type="button" aria-label="关闭微信交流窗口">×</button>
+    <p class="eyebrow">KEEP IN TOUCH</p><h2 id="wechat-title">一起学群论。</h2><p id="wechat-description">添加微信，备注「魔方群论」，邀请你加入学习交流群。</p>
+    <div class="qr-area" id="qr-area"><img class="wechat-qr" src="assets/wechat-contact.png" alt="德森的个人微信二维码，添加时请备注魔方群论" width="230" height="230"></div>
+    <button class="button primary" id="copy-wechat" type="button" hidden>复制微信号</button>
+    <p class="dialog-note" id="wechat-note" role="status" aria-live="polite">微信扫码添加；手机上可保存图片后在微信中识别。</p>
+  </dialog>
+  <div class="toast" role="status" aria-live="polite" id="toast"></div>
+</body>
+</html>
